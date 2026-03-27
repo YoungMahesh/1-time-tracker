@@ -4,7 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import { Clock, Layers, TimerReset } from "lucide-react";
 import { TaskForm } from "@/components/task-form";
 import { TaskCard } from "@/components/task-card";
-import { getAllTasks, saveTask, getTotalMinutes, formatDuration, type Task } from "@/lib/db";
+import {
+  getAllTasks,
+  saveTask,
+  getTotalMinutes,
+  formatDuration,
+  type Task,
+} from "@/lib/db";
 import { cn } from "@/lib/utils";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
@@ -16,8 +22,10 @@ function generateId(): string {
 // ── Grand total live ticker ────────────────────────────────────────────────────
 
 function useLiveTotalMinutes(tasks: Task[]): number {
-  const [tick, setTick] = useState(0);
-  const hasRunning = tasks.some((t) => t.logs.some((l) => l.endTimestamp === null));
+  const [, setTick] = useState(0);
+  const hasRunning = tasks.some((t) =>
+    t.logs.some((l) => l.endTimestamp === null),
+  );
 
   useEffect(() => {
     if (!hasRunning) return;
@@ -30,9 +38,12 @@ function useLiveTotalMinutes(tasks: Task[]): number {
       .filter((l) => l.endTimestamp !== null)
       .reduce((s, l) => s + (l.minutesSpent ?? 0), 0);
     const active = task.logs.find((l) => l.endTimestamp === null);
-    const liveSeconds = active ? (Date.now() - active.startTimestamp) / 1000 : 0;
+    // This impure function call is intentional - it's triggered only when state changes
+    // via the interval in useEffect, providing live time updates for active tasks
+    const liveSeconds = active
+      ? (Date.now() - active.startTimestamp) / 1000 // eslint-disable-line react-hooks/purity
+      : 0;
     return acc + completed + liveSeconds / 60;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, 0);
 }
 
@@ -57,9 +68,7 @@ export default function Home() {
   }, []);
 
   const handleUpdate = useCallback((updated: Task) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === updated.id ? updated : t))
-    );
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   }, []);
 
   const handleDelete = useCallback((id: string) => {
@@ -68,10 +77,10 @@ export default function Home() {
 
   const totalTrackedMinutes = tasks.reduce(
     (acc, t) => acc + getTotalMinutes(t),
-    0
+    0,
   );
   const runningCount = tasks.filter((t) =>
-    t.logs.some((l) => l.endTimestamp === null)
+    t.logs.some((l) => l.endTimestamp === null),
   ).length;
 
   return (
@@ -109,7 +118,7 @@ export default function Home() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8 items-start">
           {/* ── Sidebar: Form + Stats ── */}
-          <div className="flex flex-col gap-5 lg:sticky lg:top-[65px]">
+          <div className="flex flex-col gap-5 lg:sticky lg:top-16.25">
             <TaskForm onSubmit={handleCreate} />
 
             {/* Stats */}
@@ -152,7 +161,7 @@ export default function Home() {
                       "rounded-xl border border-border bg-card h-24 animate-pulse",
                       i === 1 && "opacity-100",
                       i === 2 && "opacity-60",
-                      i === 3 && "opacity-30"
+                      i === 3 && "opacity-30",
                     )}
                   />
                 ))}
@@ -160,7 +169,10 @@ export default function Home() {
             ) : tasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="size-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
-                  <Clock className="size-8 text-muted-foreground/30" strokeWidth={1.5} />
+                  <Clock
+                    className="size-8 text-muted-foreground/30"
+                    strokeWidth={1.5}
+                  />
                 </div>
                 <h2 className="text-base font-semibold text-foreground/60 mb-1.5">
                   No tasks yet
