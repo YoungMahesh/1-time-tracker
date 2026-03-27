@@ -21,6 +21,7 @@ import {
   getTotalMinutes,
 } from "@/lib/db";
 import { cn } from "@/lib/utils";
+import { ScreenWakeLock } from "@/components/screen-wake-lock";
 
 interface TaskCardProps {
   task: Task;
@@ -105,6 +106,8 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
     return () => clearInterval(interval);
   }, [isRunning, activeLog]);
 
+
+
   // Close popover on outside click
   useEffect(() => {
     if (!popoverOpen) return;
@@ -180,6 +183,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
 
   return (
     <div className="relative">
+      <ScreenWakeLock isRunning={isRunning} />
       {/* Card */}
       <div
         ref={cardRef}
