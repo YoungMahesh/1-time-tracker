@@ -11,6 +11,16 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   type Task,
   type TimeLog,
   saveTask,
@@ -30,6 +40,7 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [liveElapsed, setLiveElapsed] = useState(0);
   const popoverRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -92,14 +103,18 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
     [task, isRunning, onUpdate],
   );
 
-  const handleDelete = useCallback(
-    async (e: React.MouseEvent) => {
+  const handleDeleteClick = useCallback(
+    (e: React.MouseEvent) => {
       e.stopPropagation();
-      await deleteTask(task.id);
-      onDelete(task.id);
+      setDeleteDialogOpen(true);
     },
-    [task.id, onDelete],
+    [],
   );
+
+  const handleDeleteConfirm = useCallback(async () => {
+    await deleteTask(task.id);
+    onDelete(task.id);
+  }, [task.id, onDelete]);
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -227,7 +242,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
               title="Delete task"
               className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
             >
@@ -236,6 +251,25 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{task.name}&quot;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Popover */}
       {popoverOpen && (
