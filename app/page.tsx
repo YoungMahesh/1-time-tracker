@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Clock, Layers, TimerReset } from "lucide-react";
+import { Clock, Layers, TimerReset, Download, Upload } from "lucide-react";
 import { TaskForm } from "@/components/task-form";
 import { TaskCard } from "@/components/task-card";
 import {
@@ -9,6 +9,7 @@ import {
   saveTask,
   getTotalMinutes,
   formatDuration,
+  importTasks,
   type Task,
 } from "@/lib/db";
 import { cn } from "@/lib/utils";
@@ -86,6 +87,37 @@ export default function Home() {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const handleExport = useCallback(() => {
+    const data = JSON.stringify(tasks, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `1timer-export-${new Date().toISOString().split("T")[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [tasks]);
+
+  const handleImport = useCallback(async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const imported = JSON.parse(text) as Task[];
+        if (!Array.isArray(imported)) throw new Error("Invalid format");
+        await importTasks(imported);
+        setTasks(imported);
+      } catch {
+        alert("Failed to import: invalid file format");
+      }
+    };
+    input.click();
+  }, []);
+
   const totalTrackedMinutes = tasks.reduce(
     (acc, t) => acc + getTotalMinutes(t),
     0,
@@ -121,6 +153,22 @@ export default function Home() {
                 {formatDuration(liveTotal)}
               </span>
               <span className="hidden sm:inline">total today</span>
+            </div>
+            <div className="flex items-center gap-1 border-l border-border pl-3">
+              <button
+                onClick={handleExport}
+                className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                title="Export data"
+              >
+                <Download className="size-4" />
+              </button>
+              <button
+                onClick={handleImport}
+                className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                title="Import data"
+              >
+                <Upload className="size-4" />
+              </button>
             </div>
           </div>
         </div>
