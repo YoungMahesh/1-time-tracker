@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
       "Track time spent on tasks with sessions and logs, stored locally in IndexedDB.",
     start_url: "/",
     display: "standalone",
-    orientation: "portrait",
+    orientation: "any",
     background_color: "#262626",
     theme_color: "#262626",
     icons: [
