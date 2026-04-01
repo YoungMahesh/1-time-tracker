@@ -74,14 +74,19 @@ function LogEntry({
     const newEnd = editEnd ? parseLocalDateTime(editEnd) : null;
     const minutesSpent =
       newEnd !== null ? (newEnd - newStart) / 1000 / 60 : null;
-    onUpdate({ ...log, startTimestamp: newStart, endTimestamp: newEnd, minutesSpent });
+    onUpdate({
+      ...log,
+      startTimestamp: newStart,
+      endTimestamp: newEnd,
+      minutesSpent,
+    });
     setEditing(false);
   };
 
   if (editing) {
     return (
       <div className="py-2.5 border-b border-border/40 last:border-0 space-y-2">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-muted-foreground">
             Edit Session #{index + 1}
           </span>
@@ -151,28 +156,28 @@ function LogEntry({
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-muted-foreground">
-            Session #{index + 1}
-          </span>
           <div className="flex items-center gap-1.5">
-            <span
-              className={cn(
-                "text-xs font-mono font-bold tabular-nums",
-                log.endTimestamp === null
-                  ? "text-emerald-500"
-                  : "text-foreground/70",
-              )}
-            >
-              {duration}
+            <span className="text-xs font-semibold text-muted-foreground">
+              Session #{index + 1}
             </span>
             <button
               onClick={startEditing}
-              className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition-opacity"
+              className="p-1 text-muted-foreground hover:text-foreground transition-colors"
               title="Edit session"
             >
               <Pencil className="size-3" />
             </button>
           </div>
+          <span
+            className={cn(
+              "text-xs font-mono font-bold tabular-nums",
+              log.endTimestamp === null
+                ? "text-emerald-500"
+                : "text-foreground/70",
+            )}
+          >
+            {duration}
+          </span>
         </div>
         <div className="text-xs text-muted-foreground/60 mt-0.5 flex items-center gap-1">
           <span>{formatTimestamp(log.startTimestamp)}</span>
