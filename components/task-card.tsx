@@ -16,7 +16,6 @@ import {
   saveTask,
   deleteTask,
   formatDuration,
-  getTotalMinutes,
 } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { ScreenWakeLock } from "@/components/screen-wake-lock";
@@ -108,8 +107,17 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
     [task.id, onDelete],
   );
 
-  const totalMinutes = getTotalMinutes(task);
-  const liveTotal = isRunning ? totalMinutes + liveElapsed / 60 : totalMinutes;
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayMinutes = task.logs.reduce((acc, log) => {
+    const logDate = new Date(log.startTimestamp);
+    logDate.setHours(0, 0, 0, 0);
+    if (logDate.getTime() === todayStart.getTime() && log.minutesSpent !== null) {
+      return acc + log.minutesSpent;
+    }
+    return acc;
+  }, 0);
+  const todayLiveTotal = isRunning ? todayMinutes + liveElapsed / 60 : todayMinutes;
 
   // Color tag for running indicator
   const tagColors = [
@@ -174,16 +182,25 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
               </div>
             )}
 
-            {/* Total time */}
+            {/* Today's time */}
             <div className="flex items-center gap-1.5">
               <Clock className="size-3.5 text-muted-foreground/60 shrink-0" />
               <span className="text-sm font-mono font-bold tabular-nums text-foreground/80">
-                {formatDuration(liveTotal)}
+                {formatDuration(todayLiveTotal)}
               </span>
               <span className="text-xs text-muted-foreground/40">
-                · {task.logs.filter((l) => l.endTimestamp !== null).length}{" "}
+                ·{" "}
+                {task.logs.filter((l) => {
+                  const logDate = new Date(l.startTimestamp);
+                  logDate.setHours(0, 0, 0, 0);
+                  return logDate.getTime() === todayStart.getTime() && l.endTimestamp !== null;
+                }).length}{" "}
                 session
-                {task.logs.filter((l) => l.endTimestamp !== null).length !== 1
+                {task.logs.filter((l) => {
+                  const logDate = new Date(l.startTimestamp);
+                  logDate.setHours(0, 0, 0, 0);
+                  return logDate.getTime() === todayStart.getTime() && l.endTimestamp !== null;
+                }).length !== 1
                   ? "s"
                   : ""}
               </span>
@@ -263,10 +280,10 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
               </div>
               <div className="text-right shrink-0">
                 <div className="text-xs text-muted-foreground/60 mb-0.5">
-                  Total
+                  Total Today
                 </div>
                 <div className="text-base font-mono font-bold tabular-nums text-foreground">
-                  {formatDuration(liveTotal)}
+                  {formatDuration(todayLiveTotal)}
                 </div>
               </div>
             </div>
@@ -280,7 +297,14 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
                 Session Logs
               </span>
             </div>
-            <SessionLogs logs={task.logs} />
+            <SessionLogs
+              logs={task.logs}
+              onUpdate={(logs) => {
+                const updated = { ...task, logs };
+                saveTask(updated);
+                onUpdate(updated);
+              }}
+            />
           </div>
         </div>
       )}

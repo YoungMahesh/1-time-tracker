@@ -33,13 +33,24 @@ function useLiveTotalMinutes(tasks: Task[]): number {
     return () => clearInterval(id);
   }, [hasRunning]);
 
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
   return tasks.reduce((acc, task) => {
     const completed = task.logs
-      .filter((l) => l.endTimestamp !== null)
+      .filter((l) => {
+        if (l.endTimestamp === null) return false;
+        const logDate = new Date(l.startTimestamp);
+        logDate.setHours(0, 0, 0, 0);
+        return logDate.getTime() === todayStart.getTime();
+      })
       .reduce((s, l) => s + (l.minutesSpent ?? 0), 0);
-    const active = task.logs.find((l) => l.endTimestamp === null);
-    // This impure function call is intentional - it's triggered only when state changes
-    // via the interval in useEffect, providing live time updates for active tasks
+    const active = task.logs.find((l) => {
+      if (l.endTimestamp !== null) return false;
+      const logDate = new Date(l.startTimestamp);
+      logDate.setHours(0, 0, 0, 0);
+      return logDate.getTime() === todayStart.getTime();
+    });
     const liveSeconds = active
       ? (Date.now() - active.startTimestamp) / 1000 // eslint-disable-line react-hooks/purity
       : 0;

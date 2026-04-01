@@ -8,7 +8,6 @@
     }
   },
   // https://opencode.ai/docs/rules/#custom-instructions
-  "instructions": ["README.md"],
   "watcher": {
     "ignore": [
       "node_modules/**",
