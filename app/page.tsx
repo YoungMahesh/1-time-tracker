@@ -97,11 +97,11 @@ export default function Home() {
   const handleStart = useCallback(
     async (taskId: string) => {
       const now = Date.now();
+      let updatedRunning: Task | null = null;
       setTasks((prev) => {
         const runningTask = prev.find((t) =>
           t.logs.some((l) => l.endTimestamp === null),
         );
-        let updatedRunning: Task | null = null;
         if (runningTask) {
           const updatedLogs: TimeLog[] = runningTask.logs.map((log) => {
             if (log.endTimestamp !== null) return log;
@@ -110,7 +110,6 @@ export default function Home() {
           });
           updatedRunning = { ...runningTask, logs: updatedLogs };
           saveTask(updatedRunning);
-          handleUpdate(updatedRunning);
           if (runningTask.id === taskId) return prev;
         }
         const taskToStart = prev.find((t) => t.id === taskId);
@@ -122,7 +121,6 @@ export default function Home() {
         };
         const updated: Task = { ...taskToStart, logs: [...taskToStart.logs, newLog] };
         saveTask(updated);
-        handleUpdate(updated);
         return [
           updated,
           ...prev
@@ -131,7 +129,7 @@ export default function Home() {
         ];
       });
     },
-    [handleUpdate],
+    [],
   );
 
   const handleDelete = useCallback((id: string) => {
