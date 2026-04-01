@@ -27,12 +27,12 @@ User can start and stop tracker for a task.
 - `lib/types/` — TypeScript types and interfaces
 - `lib/db.ts` - Database operations
 
-## Validation
-
-- **DO NOT** run `dev`, `build`, commands
-- To **Install Shadcn Component** use `pnpm dlx shadcn@latest add <component-name>`
-
 # Instructions for AI Agents:
+
+## Commands
+
+- **DO NOT** run `dev` or `build` commands
+- To **Install Shadcn Component** use `pnpm dlx shadcn@latest add <component-name>`
 
 ## Before making any changes
 

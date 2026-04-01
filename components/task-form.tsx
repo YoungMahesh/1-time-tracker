@@ -138,7 +138,7 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
             placeholder={
               tags.length === 0 ? "Add tags (press Enter or comma)" : ""
             }
-            className="flex-1 min-w-24 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/40 py-0.5"
+            className="flex-1 min-w-16 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/40 py-0.5"
           />
         </div>
       </div>

@@ -8,7 +8,6 @@ import {
   Clock,
   Tag,
   CalendarClock,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,77 +16,16 @@ import {
   saveTask,
   deleteTask,
   formatDuration,
-  formatTimestamp,
   getTotalMinutes,
 } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { ScreenWakeLock } from "@/components/screen-wake-lock";
+import { SessionLogs } from "@/components/session-logs";
 
 interface TaskCardProps {
   task: Task;
   onUpdate: (task: Task) => void;
   onDelete: (id: string) => void;
-}
-
-function LogEntry({ log, index }: { log: TimeLog; index: number }) {
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    if (log.endTimestamp !== null) return;
-    const interval = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - log.startTimestamp) / 1000));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [log.startTimestamp, log.endTimestamp]);
-
-  const duration =
-    log.endTimestamp !== null
-      ? formatDuration(log.minutesSpent ?? 0)
-      : formatDuration(elapsed / 60);
-
-  return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-border/40 last:border-0">
-      <div className="flex flex-col items-center mt-0.5">
-        <div
-          className={cn(
-            "size-2 rounded-full mt-1",
-            log.endTimestamp === null
-              ? "bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)] animate-pulse"
-              : "bg-muted-foreground/30",
-          )}
-        />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-muted-foreground">
-            Session #{index + 1}
-          </span>
-          <span
-            className={cn(
-              "text-xs font-mono font-bold tabular-nums",
-              log.endTimestamp === null
-                ? "text-emerald-500"
-                : "text-foreground/70",
-            )}
-          >
-            {duration}
-          </span>
-        </div>
-        <div className="text-xs text-muted-foreground/60 mt-0.5 flex items-center gap-1">
-          <span>{formatTimestamp(log.startTimestamp)}</span>
-          {log.endTimestamp !== null && (
-            <>
-              <ChevronRight className="size-3 shrink-0" />
-              <span>{formatTimestamp(log.endTimestamp)}</span>
-            </>
-          )}
-          {log.endTimestamp === null && (
-            <span className="ml-1 text-emerald-500 font-medium">• running</span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
@@ -342,21 +280,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
                 Session Logs
               </span>
             </div>
-            {task.logs.length === 0 ? (
-              <div className="py-4 text-center text-xs text-muted-foreground/40">
-                No sessions yet. Press play to start tracking.
-              </div>
-            ) : (
-              <div className="max-h-64 overflow-y-auto pr-1 -mr-1">
-                {[...task.logs].reverse().map((log, i) => (
-                  <LogEntry
-                    key={log.startTimestamp}
-                    log={log}
-                    index={task.logs.length - 1 - i}
-                  />
-                ))}
-              </div>
-            )}
+            <SessionLogs logs={task.logs} />
           </div>
         </div>
       )}
