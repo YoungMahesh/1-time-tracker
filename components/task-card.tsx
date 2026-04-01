@@ -25,9 +25,10 @@ interface TaskCardProps {
   task: Task;
   onUpdate: (task: Task) => void;
   onDelete: (id: string) => void;
+  onStart: (taskId: string) => void;
 }
 
-export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [liveElapsed, setLiveElapsed] = useState(0);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -65,19 +66,12 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
   }, [popoverOpen]);
 
   const handleStart = useCallback(
-    async (e: React.MouseEvent) => {
+    (e: React.MouseEvent) => {
       e.stopPropagation();
       if (isRunning) return;
-      const newLog: TimeLog = {
-        startTimestamp: Date.now(),
-        endTimestamp: null,
-        minutesSpent: null,
-      };
-      const updated: Task = { ...task, logs: [...task.logs, newLog] };
-      await saveTask(updated);
-      onUpdate(updated);
+      onStart(task.id);
     },
-    [task, isRunning, onUpdate],
+    [isRunning, onStart, task.id],
   );
 
   const handleStop = useCallback(

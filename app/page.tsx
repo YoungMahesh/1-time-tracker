@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Clock, Layers, TimerReset, Download, Upload } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { TaskForm } from "@/components/task-form";
 import { TaskCard } from "@/components/task-card";
 import {
@@ -11,6 +12,7 @@ import {
   formatDuration,
   importTasks,
   type Task,
+  type TimeLog,
 } from "@/lib/db";
 import { cn } from "@/lib/utils";
 
@@ -67,7 +69,16 @@ export default function Home() {
 
   useEffect(() => {
     getAllTasks()
-      .then((t) => setTasks(t.sort((a, b) => b.logs.length - a.logs.length)))
+      .then((t) =>
+        setTasks(
+          t.sort((a, b) => {
+            const aRunning = a.logs.some((l) => l.endTimestamp === null) ? 1 : 0;
+            const bRunning = b.logs.some((l) => l.endTimestamp === null) ? 1 : 0;
+            if (bRunning !== aRunning) return bRunning - aRunning;
+            return b.logs.length - a.logs.length;
+          }),
+        ),
+      )
       .finally(() => setLoading(false));
   }, []);
 
@@ -82,6 +93,46 @@ export default function Home() {
   const handleUpdate = useCallback((updated: Task) => {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   }, []);
+
+  const handleStart = useCallback(
+    async (taskId: string) => {
+      const now = Date.now();
+      setTasks((prev) => {
+        const runningTask = prev.find((t) =>
+          t.logs.some((l) => l.endTimestamp === null),
+        );
+        let updatedRunning: Task | null = null;
+        if (runningTask) {
+          const updatedLogs: TimeLog[] = runningTask.logs.map((log) => {
+            if (log.endTimestamp !== null) return log;
+            const minutes = (now - log.startTimestamp) / 1000 / 60;
+            return { ...log, endTimestamp: now, minutesSpent: minutes };
+          });
+          updatedRunning = { ...runningTask, logs: updatedLogs };
+          saveTask(updatedRunning);
+          handleUpdate(updatedRunning);
+          if (runningTask.id === taskId) return prev;
+        }
+        const taskToStart = prev.find((t) => t.id === taskId);
+        if (!taskToStart) return prev;
+        const newLog: TimeLog = {
+          startTimestamp: now,
+          endTimestamp: null,
+          minutesSpent: null,
+        };
+        const updated: Task = { ...taskToStart, logs: [...taskToStart.logs, newLog] };
+        saveTask(updated);
+        handleUpdate(updated);
+        return [
+          updated,
+          ...prev
+            .filter((t) => t.id !== taskId)
+            .map((t) => (t.id === runningTask?.id ? updatedRunning! : t)),
+        ];
+      });
+    },
+    [handleUpdate],
+  );
 
   const handleDelete = useCallback((id: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
@@ -241,30 +292,27 @@ export default function Home() {
                 </p>
               </div>
             ) : (
-              <>
-                {/* Running tasks first */}
-                {tasks
-                  .filter((t) => t.logs.some((l) => l.endTimestamp === null))
-                  .map((task) => (
-                    <TaskCard
+              <motion.div className="flex flex-col gap-3" layout>
+                <AnimatePresence mode="popLayout">
+                  {tasks.map((task) => (
+                    <motion.div
                       key={task.id}
-                      task={task}
-                      onUpdate={handleUpdate}
-                      onDelete={handleDelete}
-                    />
+                      layout
+                      initial={false}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    >
+                      <TaskCard
+                        task={task}
+                        onUpdate={handleUpdate}
+                        onDelete={handleDelete}
+                        onStart={handleStart}
+                      />
+                    </motion.div>
                   ))}
-                {/* Idle tasks */}
-                {tasks
-                  .filter((t) => !t.logs.some((l) => l.endTimestamp === null))
-                  .map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      onUpdate={handleUpdate}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-              </>
+                </AnimatePresence>
+              </motion.div>
             )}
           </div>
         </div>
