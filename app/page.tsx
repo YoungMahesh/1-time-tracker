@@ -8,7 +8,6 @@ import { TaskCard } from "@/components/task-card";
 import {
   getAllTasks,
   saveTask,
-  getTotalMinutes,
   formatDuration,
   importTasks,
   type Task,
@@ -22,20 +21,7 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-// ── Grand total live ticker ────────────────────────────────────────────────────
-
-function useLiveTotalMinutes(tasks: Task[]): number {
-  const [, setTick] = useState(0);
-  const hasRunning = tasks.some((t) =>
-    t.logs.some((l) => l.endTimestamp === null),
-  );
-
-  useEffect(() => {
-    if (!hasRunning) return;
-    const id = setInterval(() => setTick((n) => n + 1), 1000);
-    return () => clearInterval(id);
-  }, [hasRunning]);
-
+function getTodayMinutes(tasks: Task[]): number {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
@@ -54,11 +40,22 @@ function useLiveTotalMinutes(tasks: Task[]): number {
       logDate.setHours(0, 0, 0, 0);
       return logDate.getTime() === todayStart.getTime();
     });
-    const liveSeconds = active
-      ? (Date.now() - active.startTimestamp) / 1000 // eslint-disable-line react-hooks/purity
-      : 0;
+    const liveSeconds = active ? (Date.now() - active.startTimestamp) / 1000 : 0;
     return acc + completed + liveSeconds / 60;
   }, 0);
+}
+
+function getTodayTaskCount(tasks: Task[]): number {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  return tasks.filter((task) =>
+    task.logs.some((l) => {
+      const logDate = new Date(l.startTimestamp);
+      logDate.setHours(0, 0, 0, 0);
+      return logDate.getTime() === todayStart.getTime();
+    }),
+  ).length;
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -66,6 +63,17 @@ function useLiveTotalMinutes(tasks: Task[]): number {
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [, setTick] = useState(0);
+
+  const hasRunning = tasks.some((t) =>
+    t.logs.some((l) => l.endTimestamp === null),
+  );
+
+  useEffect(() => {
+    if (!hasRunning) return;
+    const id = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [hasRunning]);
 
   useEffect(() => {
     getAllTasks()
@@ -81,8 +89,6 @@ export default function Home() {
       )
       .finally(() => setLoading(false));
   }, []);
-
-  const liveTotal = useLiveTotalMinutes(tasks);
 
   const handleCreate = useCallback(async (name: string, tags: string[]) => {
     const task: Task = { id: generateId(), name, tags, logs: [] };
@@ -167,10 +173,6 @@ export default function Home() {
     input.click();
   }, []);
 
-  const totalTrackedMinutes = tasks.reduce(
-    (acc, t) => acc + getTotalMinutes(t),
-    0,
-  );
   const runningCount = tasks.filter((t) =>
     t.logs.some((l) => l.endTimestamp === null),
   ).length;
@@ -196,13 +198,6 @@ export default function Home() {
                 {runningCount} running
               </div>
             )}
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="size-3.5" />
-              <span className="font-mono font-semibold tabular-nums text-foreground/80">
-                {formatDuration(liveTotal)}
-              </span>
-              <span className="hidden sm:inline">total today</span>
-            </div>
             <div className="flex items-center gap-1 border-l border-border pl-3">
               <button
                 onClick={handleExport}
@@ -236,22 +231,22 @@ export default function Home() {
                   <div className="flex items-center gap-1.5 mb-1">
                     <Layers className="size-3.5 text-muted-foreground/60" />
                     <span className="text-xs text-muted-foreground/60 uppercase tracking-widest font-medium">
-                      Tasks
+                      Tasks Today
                     </span>
                   </div>
                   <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
-                    {tasks.length}
+                    {getTodayTaskCount(tasks)}
                   </span>
                 </div>
                 <div className="bg-card border border-border rounded-xl p-3.5">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Clock className="size-3.5 text-muted-foreground/60" />
                     <span className="text-xs text-muted-foreground/60 uppercase tracking-widest font-medium">
-                      Logged
+                      Total Today
                     </span>
                   </div>
                   <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
-                    {formatDuration(totalTrackedMinutes)}
+                    {formatDuration(getTodayMinutes(tasks))}
                   </span>
                 </div>
               </div>
