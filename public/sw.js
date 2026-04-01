@@ -13,7 +13,7 @@ self.addEventListener("install", (event) => {
     caches
       .open(CACHE_NAME)
       .then((cache) => cache.addAll(PRECACHE_ASSETS))
-      .then(() => self.skipWaiting())
+      .then(() => self.skipWaiting()),
   );
 });
 
@@ -25,10 +25,10 @@ self.addEventListener("activate", (event) => {
         Promise.all(
           keys
             .filter((key) => key !== CACHE_NAME)
-            .map((key) => caches.delete(key))
-        )
+            .map((key) => caches.delete(key)),
+        ),
       )
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim()),
   );
 });
 
@@ -45,10 +45,16 @@ self.addEventListener("fetch", (event) => {
       fetch(event.request)
         .then((response) => {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.put(event.request, clone));
           return response;
         })
-        .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/")))
+        .catch(() =>
+          caches
+            .match(event.request)
+            .then((cached) => cached || caches.match("/")),
+        ),
     );
     return;
   }
@@ -61,10 +67,12 @@ self.addEventListener("fetch", (event) => {
         fetch(event.request).then((response) => {
           if (response.ok) {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            caches
+              .open(CACHE_NAME)
+              .then((cache) => cache.put(event.request, clone));
           }
           return response;
-        })
-    )
+        }),
+    ),
   );
 });

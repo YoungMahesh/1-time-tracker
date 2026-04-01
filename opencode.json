@@ -1,0 +1,28 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.example": "allow"
+    }
+  },
+  // https://opencode.ai/docs/rules/#custom-instructions
+  "instructions": ["README.md"],
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      ".next/**",
+      "pnpm-lock.yaml",
+      "tsconfig.tsbuildinfo",
+      ".git/**"
+    ]
+  },
+  "formatter": {
+    "prettier": {
+      "disabled": false,
+      "extensions": [".ts", ".tsx", ".js", ".jsx", ".json", ".css", ".md"],
+      "command": ["pnpm", "prettier", "--write", "$FILE"]
+    }
+  }
+}

@@ -4,9 +4,15 @@ import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const geistMonoHeading = Geist_Mono({subsets:['latin'],variable:'--font-heading'});
+const geistMonoHeading = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-heading",
+});
 
-const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +26,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "1timer — Time Tracker",
-  description: "Track time spent on tasks with sessions and logs, stored locally in IndexedDB.",
+  description:
+    "Track time spent on tasks with sessions and logs, stored locally in IndexedDB.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

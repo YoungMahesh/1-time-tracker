@@ -53,7 +53,7 @@ function LogEntry({ log, index }: { log: TimeLog; index: number }) {
             "size-2 rounded-full mt-1",
             log.endTimestamp === null
               ? "bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)] animate-pulse"
-              : "bg-muted-foreground/30"
+              : "bg-muted-foreground/30",
           )}
         />
       </div>
@@ -65,7 +65,9 @@ function LogEntry({ log, index }: { log: TimeLog; index: number }) {
           <span
             className={cn(
               "text-xs font-mono font-bold tabular-nums",
-              log.endTimestamp === null ? "text-emerald-500" : "text-foreground/70"
+              log.endTimestamp === null
+                ? "text-emerald-500"
+                : "text-foreground/70",
             )}
           >
             {duration}
@@ -101,12 +103,12 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
   useEffect(() => {
     if (!isRunning || !activeLog) return;
     const interval = setInterval(() => {
-      setLiveElapsed(Math.floor((Date.now() - activeLog.startTimestamp) / 1000));
+      setLiveElapsed(
+        Math.floor((Date.now() - activeLog.startTimestamp) / 1000),
+      );
     }, 1000);
     return () => clearInterval(interval);
   }, [isRunning, activeLog]);
-
-
 
   // Close popover on outside click
   useEffect(() => {
@@ -138,7 +140,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
       await saveTask(updated);
       onUpdate(updated);
     },
-    [task, isRunning, onUpdate]
+    [task, isRunning, onUpdate],
   );
 
   const handleStop = useCallback(
@@ -156,7 +158,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
       onUpdate(updated);
       setLiveElapsed(0);
     },
-    [task, isRunning, onUpdate]
+    [task, isRunning, onUpdate],
   );
 
   const handleDelete = useCallback(
@@ -165,7 +167,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
       await deleteTask(task.id);
       onDelete(task.id);
     },
-    [task.id, onDelete]
+    [task.id, onDelete],
   );
 
   const totalMinutes = getTotalMinutes(task);
@@ -194,8 +196,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
           popoverOpen
             ? "border-primary/50 shadow-md shadow-primary/10"
             : "border-border",
-          isRunning &&
-            "border-emerald-500/40 shadow-emerald-500/10 shadow-md"
+          isRunning && "border-emerald-500/40 shadow-emerald-500/10 shadow-md",
         )}
       >
         {/* Running pulse border */}
@@ -225,7 +226,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
                     key={tag}
                     className={cn(
                       "inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-md font-medium",
-                      tagColors[i % tagColors.length]
+                      tagColors[i % tagColors.length],
                     )}
                   >
                     <Tag className="size-2.5" />
@@ -242,7 +243,8 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
                 {formatDuration(liveTotal)}
               </span>
               <span className="text-xs text-muted-foreground/40">
-                · {task.logs.filter((l) => l.endTimestamp !== null).length} session
+                · {task.logs.filter((l) => l.endTimestamp !== null).length}{" "}
+                session
                 {task.logs.filter((l) => l.endTimestamp !== null).length !== 1
                   ? "s"
                   : ""}
@@ -293,7 +295,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
           className={cn(
             "absolute z-50 left-0 right-0 top-full mt-2",
             "bg-popover border border-border rounded-xl shadow-xl",
-            "animate-in fade-in slide-in-from-top-2 duration-150"
+            "animate-in fade-in slide-in-from-top-2 duration-150",
           )}
           onClick={(e) => e.stopPropagation()}
         >
@@ -311,7 +313,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
                         key={tag}
                         className={cn(
                           "inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-md font-medium",
-                          tagColors[i % tagColors.length]
+                          tagColors[i % tagColors.length],
                         )}
                       >
                         <Tag className="size-2.5" />
@@ -322,7 +324,9 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
                 )}
               </div>
               <div className="text-right shrink-0">
-                <div className="text-xs text-muted-foreground/60 mb-0.5">Total</div>
+                <div className="text-xs text-muted-foreground/60 mb-0.5">
+                  Total
+                </div>
                 <div className="text-base font-mono font-bold tabular-nums text-foreground">
                   {formatDuration(liveTotal)}
                 </div>

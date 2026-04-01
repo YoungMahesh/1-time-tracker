@@ -55,7 +55,10 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
     >
       <div className="flex items-center gap-2 mb-1">
         <div className="size-7 rounded-md bg-primary/20 flex items-center justify-center">
-          <Plus className="size-4 text-primary-foreground/80" strokeWidth={2.5} />
+          <Plus
+            className="size-4 text-primary-foreground/80"
+            strokeWidth={2.5}
+          />
         </div>
         <span className="text-sm font-semibold text-foreground/80 tracking-wide uppercase">
           New Task
@@ -83,7 +86,7 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
             "w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all",
             focused === "name"
               ? "border-primary ring-2 ring-primary/20"
-              : "border-border hover:border-muted-foreground/30"
+              : "border-border hover:border-muted-foreground/30",
           )}
         />
       </div>
@@ -100,7 +103,7 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
             "min-h-10 w-full rounded-lg border bg-background px-2.5 py-1.5 flex flex-wrap gap-1.5 items-center cursor-text transition-all",
             focused === "tag"
               ? "border-primary ring-2 ring-primary/20"
-              : "border-border hover:border-muted-foreground/30"
+              : "border-border hover:border-muted-foreground/30",
           )}
         >
           {tags.map((tag) => (
@@ -132,7 +135,9 @@ export function TaskForm({ onSubmit }: TaskFormProps) {
               setFocused(null);
             }}
             onFocus={() => setFocused("tag")}
-            placeholder={tags.length === 0 ? "Add tags (press Enter or comma)" : ""}
+            placeholder={
+              tags.length === 0 ? "Add tags (press Enter or comma)" : ""
+            }
             className="flex-1 min-w-24 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/40 py-0.5"
           />
         </div>
