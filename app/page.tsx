@@ -93,7 +93,7 @@ export default function Home() {
               <TimerReset className="size-4.5 text-primary" strokeWidth={2} />
             </div>
             <span className="text-base font-bold tracking-tight text-foreground">
-              1timer
+              1TimeTracker
             </span>
           </div>
 
@@ -116,9 +116,9 @@ export default function Home() {
       </header>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,340px)_1fr] gap-8 items-start">
           {/* ── Sidebar: Form + Stats ── */}
-          <div className="flex flex-col gap-5 lg:sticky lg:top-16.25">
+          <div className="flex flex-col gap-5 lg:sticky lg:top-20">
             <TaskForm onSubmit={handleCreate} />
 
             {/* Stats */}
