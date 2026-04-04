@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Clock, Layers, TimerReset, Download, Upload } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { AnimatePresence, motion } from "framer-motion";
 import { TaskForm } from "@/components/task-form";
 import { TaskCard } from "@/components/task-card";
@@ -204,6 +205,7 @@ export default function Home() {
                 {runningCount} running
               </div>
             )}
+            <ThemeToggle />
             <div className="flex items-center gap-1 border-l border-border pl-3">
               <button
                 onClick={handleExport}
