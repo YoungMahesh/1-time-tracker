@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import {
-  Play,
-  Square,
-  Trash2,
-  Clock,
-  Tag,
-  CalendarClock,
-} from "lucide-react";
+import { Play, Square, Trash2, Clock, Tag, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -103,13 +96,10 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
     [task, isRunning, onUpdate],
   );
 
-  const handleDeleteClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setDeleteDialogOpen(true);
-    },
-    [],
-  );
+  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleteDialogOpen(true);
+  }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
     await deleteTask(task.id);
@@ -121,12 +111,17 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
   const todayMinutes = task.logs.reduce((acc, log) => {
     const logDate = new Date(log.startTimestamp);
     logDate.setHours(0, 0, 0, 0);
-    if (logDate.getTime() === todayStart.getTime() && log.minutesSpent !== null) {
+    if (
+      logDate.getTime() === todayStart.getTime() &&
+      log.minutesSpent !== null
+    ) {
       return acc + log.minutesSpent;
     }
     return acc;
   }, 0);
-  const todayLiveTotal = isRunning ? todayMinutes + liveElapsed / 60 : todayMinutes;
+  const todayLiveTotal = isRunning
+    ? todayMinutes + liveElapsed / 60
+    : todayMinutes;
 
   // Color tag for running indicator
   const tagColors = [
@@ -199,16 +194,24 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
               </span>
               <span className="text-xs text-muted-foreground/40">
                 ·{" "}
-                {task.logs.filter((l) => {
-                  const logDate = new Date(l.startTimestamp);
-                  logDate.setHours(0, 0, 0, 0);
-                  return logDate.getTime() === todayStart.getTime() && l.endTimestamp !== null;
-                }).length}{" "}
+                {
+                  task.logs.filter((l) => {
+                    const logDate = new Date(l.startTimestamp);
+                    logDate.setHours(0, 0, 0, 0);
+                    return (
+                      logDate.getTime() === todayStart.getTime() &&
+                      l.endTimestamp !== null
+                    );
+                  }).length
+                }{" "}
                 session
                 {task.logs.filter((l) => {
                   const logDate = new Date(l.startTimestamp);
                   logDate.setHours(0, 0, 0, 0);
-                  return logDate.getTime() === todayStart.getTime() && l.endTimestamp !== null;
+                  return (
+                    logDate.getTime() === todayStart.getTime() &&
+                    l.endTimestamp !== null
+                  );
                 }).length !== 1
                   ? "s"
                   : ""}
@@ -244,7 +247,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
               size="icon-sm"
               onClick={handleDeleteClick}
               title="Delete task"
-              className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity"
             >
               <Trash2 className="size-3.5" />
             </Button>
@@ -257,7 +260,8 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Task</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{task.name}&quot;? This action cannot be undone.
+              Are you sure you want to delete &quot;{task.name}&quot;? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

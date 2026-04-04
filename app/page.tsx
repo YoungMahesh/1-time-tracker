@@ -40,7 +40,9 @@ function getTodayMinutes(tasks: Task[]): number {
       logDate.setHours(0, 0, 0, 0);
       return logDate.getTime() === todayStart.getTime();
     });
-    const liveSeconds = active ? (Date.now() - active.startTimestamp) / 1000 : 0;
+    const liveSeconds = active
+      ? (Date.now() - active.startTimestamp) / 1000
+      : 0;
     return acc + completed + liveSeconds / 60;
   }, 0);
 }
@@ -80,8 +82,12 @@ export default function Home() {
       .then((t) =>
         setTasks(
           t.sort((a, b) => {
-            const aRunning = a.logs.some((l) => l.endTimestamp === null) ? 1 : 0;
-            const bRunning = b.logs.some((l) => l.endTimestamp === null) ? 1 : 0;
+            const aRunning = a.logs.some((l) => l.endTimestamp === null)
+              ? 1
+              : 0;
+            const bRunning = b.logs.some((l) => l.endTimestamp === null)
+              ? 1
+              : 0;
             if (bRunning !== aRunning) return bRunning - aRunning;
             return b.logs.length - a.logs.length;
           }),
@@ -100,43 +106,43 @@ export default function Home() {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   }, []);
 
-  const handleStart = useCallback(
-    async (taskId: string) => {
-      const now = Date.now();
-      let updatedRunning: Task | null = null;
-      setTasks((prev) => {
-        const runningTask = prev.find((t) =>
-          t.logs.some((l) => l.endTimestamp === null),
-        );
-        if (runningTask) {
-          const updatedLogs: TimeLog[] = runningTask.logs.map((log) => {
-            if (log.endTimestamp !== null) return log;
-            const minutes = (now - log.startTimestamp) / 1000 / 60;
-            return { ...log, endTimestamp: now, minutesSpent: minutes };
-          });
-          updatedRunning = { ...runningTask, logs: updatedLogs };
-          saveTask(updatedRunning);
-          if (runningTask.id === taskId) return prev;
-        }
-        const taskToStart = prev.find((t) => t.id === taskId);
-        if (!taskToStart) return prev;
-        const newLog: TimeLog = {
-          startTimestamp: now,
-          endTimestamp: null,
-          minutesSpent: null,
-        };
-        const updated: Task = { ...taskToStart, logs: [...taskToStart.logs, newLog] };
-        saveTask(updated);
-        return [
-          updated,
-          ...prev
-            .filter((t) => t.id !== taskId)
-            .map((t) => (t.id === runningTask?.id ? updatedRunning! : t)),
-        ];
-      });
-    },
-    [],
-  );
+  const handleStart = useCallback(async (taskId: string) => {
+    const now = Date.now();
+    let updatedRunning: Task | null = null;
+    setTasks((prev) => {
+      const runningTask = prev.find((t) =>
+        t.logs.some((l) => l.endTimestamp === null),
+      );
+      if (runningTask) {
+        const updatedLogs: TimeLog[] = runningTask.logs.map((log) => {
+          if (log.endTimestamp !== null) return log;
+          const minutes = (now - log.startTimestamp) / 1000 / 60;
+          return { ...log, endTimestamp: now, minutesSpent: minutes };
+        });
+        updatedRunning = { ...runningTask, logs: updatedLogs };
+        saveTask(updatedRunning);
+        if (runningTask.id === taskId) return prev;
+      }
+      const taskToStart = prev.find((t) => t.id === taskId);
+      if (!taskToStart) return prev;
+      const newLog: TimeLog = {
+        startTimestamp: now,
+        endTimestamp: null,
+        minutesSpent: null,
+      };
+      const updated: Task = {
+        ...taskToStart,
+        logs: [...taskToStart.logs, newLog],
+      };
+      saveTask(updated);
+      return [
+        updated,
+        ...prev
+          .filter((t) => t.id !== taskId)
+          .map((t) => (t.id === runningTask?.id ? updatedRunning! : t)),
+      ];
+    });
+  }, []);
 
   const handleDelete = useCallback((id: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
@@ -294,7 +300,11 @@ export default function Home() {
                       initial={false}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                      }}
                     >
                       <TaskCard
                         task={task}
