@@ -158,12 +158,12 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
               {isRunning && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
                   <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Live
                 </span>
               )}
-              <h3 className="text-sm font-semibold text-foreground truncate">
+              <h3 className="text-base font-semibold text-foreground truncate">
                 {task.name}
               </h3>
             </div>
@@ -175,11 +175,11 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
                   <span
                     key={tag}
                     className={cn(
-                      "inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-md font-medium",
+                      "inline-flex items-center gap-0.5 text-sm px-1.5 py-0.5 rounded-md font-medium",
                       tagColors[i % tagColors.length],
                     )}
                   >
-                    <Tag className="size-2.5" />
+                    <Tag className="size-3" />
                     {tag}
                   </span>
                 ))}
@@ -188,11 +188,11 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
 
             {/* Today's time */}
             <div className="flex items-center gap-1.5">
-              <Clock className="size-3.5 text-muted-foreground/60 shrink-0" />
+              <Clock className="size-4 text-muted-foreground/60 shrink-0" />
               <span className="text-sm font-mono font-bold tabular-nums text-foreground/80">
                 {formatDuration(todayLiveTotal)}
               </span>
-              <span className="text-xs text-muted-foreground/40">
+              <span className="text-sm text-muted-foreground/40">
                 ·{" "}
                 {
                   task.logs.filter((l) => {
@@ -229,7 +229,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
                 title="Start timer"
                 className="text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
               >
-                <Play className="size-4 fill-current" />
+                <Play className="size-5 fill-current" />
               </Button>
             ) : (
               <Button
@@ -239,7 +239,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
                 title="Stop timer"
                 className="text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
               >
-                <Square className="size-4 fill-current" />
+                <Square className="size-5 fill-current" />
               </Button>
             )}
             <Button
@@ -249,7 +249,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
               title="Delete task"
               className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity"
             >
-              <Trash2 className="size-3.5" />
+              <Trash2 className="size-4" />
             </Button>
           </div>
         </div>
@@ -290,7 +290,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
           <div className="px-4 pt-4 pb-3 border-b border-border/50">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h4 className="font-semibold text-sm text-foreground">
+                <h4 className="font-semibold text-foreground">
                   {task.name}
                 </h4>
                 {task.tags.length > 0 && (
@@ -299,11 +299,11 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
                       <span
                         key={tag}
                         className={cn(
-                          "inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-md font-medium",
+                          "inline-flex items-center gap-0.5 text-sm px-1.5 py-0.5 rounded-md font-medium",
                           tagColors[i % tagColors.length],
                         )}
                       >
-                        <Tag className="size-2.5" />
+                        <Tag className="size-3" />
                         {tag}
                       </span>
                     ))}
@@ -311,7 +311,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
                 )}
               </div>
               <div className="text-right shrink-0">
-                <div className="text-xs text-muted-foreground/60 mb-0.5">
+                <div className="text-sm text-muted-foreground/60 mb-0.5">
                   Total Today
                 </div>
                 <div className="text-base font-mono font-bold tabular-nums text-foreground">
@@ -324,8 +324,8 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
           {/* Logs */}
           <div className="px-4 py-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <CalendarClock className="size-3.5 text-muted-foreground/60" />
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+              <CalendarClock className="size-4 text-muted-foreground/60" />
+              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
                 Session Logs
               </span>
             </div>
