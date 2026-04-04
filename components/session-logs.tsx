@@ -83,116 +83,118 @@ function LogEntry({
     setEditing(false);
   };
 
-  if (editing) {
-    return (
-      <div className="py-2.5 border-b border-border/40 last:border-0 space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground">
-            Edit Session #{index + 1}
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={saveEditing}
-              className="p-1 text-emerald-500 hover:bg-emerald-500/10 rounded"
-              title="Save"
-            >
-              <Check className="size-3.5" />
-            </button>
-            <button
-              onClick={onDelete}
-              className="p-1 text-destructive hover:bg-destructive/10 rounded"
-              title="Delete"
-            >
-              <X className="size-3.5" />
-            </button>
-            <button
-              onClick={cancelEditing}
-              className="p-1 text-muted-foreground hover:bg-muted/10 rounded"
-              title="Cancel"
-            >
-              <X className="size-3.5" />
-            </button>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              Start
-            </label>
-            <input
-              type="datetime-local"
-              value={editStart}
-              onChange={(e) => setEditStart(e.target.value)}
-              className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-foreground outline-none focus:border-primary"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              End
-            </label>
-            <input
-              type="datetime-local"
-              value={editEnd}
-              onChange={(e) => setEditEnd(e.target.value)}
-              className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-foreground outline-none focus:border-primary"
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-border/40 last:border-0 group">
-      <div className="flex flex-col items-center mt-0.5">
-        <div
-          className={cn(
-            "size-2 rounded-full mt-1",
-            log.endTimestamp === null
-              ? "bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)] animate-pulse"
-              : "bg-muted-foreground/30",
-          )}
-        />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
+    <>
+      {editing ? (
+        <div className="py-2.5 border-b border-border/40 last:border-0 space-y-2">
+          <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground">
-              Session #{index + 1}
+              Edit Session #{index + 1}
             </span>
-            <button
-              onClick={startEditing}
-              className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-              title="Edit session"
-            >
-              <Pencil className="size-3" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={saveEditing}
+                className="p-1 text-emerald-500 hover:bg-emerald-500/10 rounded"
+                title="Save"
+              >
+                <Check className="size-3.5" />
+              </button>
+              <button
+                onClick={onDelete}
+                className="p-1 text-destructive hover:bg-destructive/10 rounded"
+                title="Delete"
+              >
+                <X className="size-3.5" />
+              </button>
+              <button
+                onClick={cancelEditing}
+                className="p-1 text-muted-foreground hover:bg-muted/10 rounded"
+                title="Cancel"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
           </div>
-          <span
-            className={cn(
-              "text-xs font-mono font-bold tabular-nums",
-              log.endTimestamp === null
-                ? "text-emerald-500"
-                : "text-foreground/70",
-            )}
-          >
-            {duration}
-          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Start
+              </label>
+              <input
+                type="datetime-local"
+                value={editStart}
+                onChange={(e) => setEditStart(e.target.value)}
+                className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-foreground outline-none focus:border-primary"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                End
+              </label>
+              <input
+                type="datetime-local"
+                value={editEnd}
+                onChange={(e) => setEditEnd(e.target.value)}
+                className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-foreground outline-none focus:border-primary"
+              />
+            </div>
+          </div>
         </div>
-        <div className="text-xs text-muted-foreground/60 mt-0.5 flex items-center gap-1">
-          <span>{formatTimestamp(log.startTimestamp)}</span>
-          {log.endTimestamp !== null && (
-            <>
-              <ChevronRight className="size-3 shrink-0" />
-              <span>{formatTimestamp(log.endTimestamp)}</span>
-            </>
-          )}
-          {log.endTimestamp === null && (
-            <span className="ml-1 text-emerald-500 font-medium">• running</span>
-          )}
+      ) : (
+        <div className="flex items-start gap-3 py-2.5 border-b border-border/40 last:border-0 group">
+          <div className="flex flex-col items-center mt-0.5">
+            <div
+              className={cn(
+                "size-2 rounded-full mt-1",
+                log.endTimestamp === null
+                  ? "bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)] animate-pulse"
+                  : "bg-muted-foreground/30",
+              )}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Session #{index + 1}
+                </span>
+                <button
+                  onClick={startEditing}
+                  className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                  title="Edit session"
+                >
+                  <Pencil className="size-3" />
+                </button>
+              </div>
+              <span
+                className={cn(
+                  "text-xs font-mono font-bold tabular-nums",
+                  log.endTimestamp === null
+                    ? "text-emerald-500"
+                    : "text-foreground/70",
+                )}
+              >
+                {duration}
+              </span>
+            </div>
+            <div className="text-xs text-muted-foreground/60 mt-0.5 flex items-center gap-1">
+              <span>{formatTimestamp(log.startTimestamp)}</span>
+              {log.endTimestamp !== null && (
+                <>
+                  <ChevronRight className="size-3 shrink-0" />
+                  <span>{formatTimestamp(log.endTimestamp)}</span>
+                </>
+              )}
+              {log.endTimestamp === null && (
+                <span className="ml-1 text-emerald-500 font-medium">
+                  • running
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 
@@ -251,6 +253,9 @@ export function SessionLogs({ logs, onUpdate }: SessionLogsProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
+  const [deleteLogTimestamp, setDeleteLogTimestamp] = useState<number | null>(
+    null,
+  );
 
   const toggleDate = (date: string) => {
     setExpandedDates((prev) => {
@@ -286,6 +291,13 @@ export function SessionLogs({ logs, onUpdate }: SessionLogsProps) {
 
   const handleDeleteLog = (startTimestamp: number) => {
     onUpdate(logs.filter((l) => l.startTimestamp !== startTimestamp));
+  };
+
+  const confirmDeleteLog = () => {
+    if (deleteLogTimestamp !== null) {
+      handleDeleteLog(deleteLogTimestamp);
+      setDeleteLogTimestamp(null);
+    }
   };
 
   if (logs.length === 0 && !showAddForm) {
@@ -396,7 +408,7 @@ export function SessionLogs({ logs, onUpdate }: SessionLogsProps) {
                     log={log}
                     index={globalIndex}
                     onUpdate={(updated) => handleUpdateLog(log, updated)}
-                    onDelete={() => handleDeleteLog(log.startTimestamp)}
+                    onDelete={() => setDeleteLogTimestamp(log.startTimestamp)}
                   />
                 );
               })}
@@ -404,6 +416,45 @@ export function SessionLogs({ logs, onUpdate }: SessionLogsProps) {
           )}
         </div>
       ))}
+      {deleteLogTimestamp !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/10"
+          onClick={() => setDeleteLogTimestamp(null)}
+        >
+          <div
+            className="bg-popover border border-border rounded-xl p-4 shadow-xl max-w-xs w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4 className="font-semibold text-sm text-foreground mb-1">
+              Delete Session
+            </h4>
+            <p className="text-xs text-muted-foreground mb-4">
+              Are you sure you want to delete this session? This action cannot
+              be undone.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteLogTimestamp(null);
+                }}
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-border hover:bg-muted/50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  confirmDeleteLog();
+                }}
+                className="px-3 py-1.5 text-xs font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
