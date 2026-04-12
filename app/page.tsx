@@ -1,28 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Clock, Layers, TimerReset, Download, Upload } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AnimatePresence, motion } from "framer-motion";
 import { TaskForm } from "@/components/task-form";
 import { TaskCard } from "@/components/task-card";
-import {
-  getAllTasks,
-  saveTask,
-  formatDuration,
-  importTasks,
-  type Task,
-  type TimeLog,
-} from "@/lib/db";
+import { TaskProvider, useTaskContext } from "@/lib/context/task-context";
+import { formatDuration } from "@/lib/db";
 import { cn } from "@/lib/utils";
 
-// ── helpers ────────────────────────────────────────────────────────────────────
-
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-function getTodayMinutes(tasks: Task[]): number {
+function getTodayMinutes(
+  tasks: {
+    logs: {
+      endTimestamp: number | null;
+      minutesSpent: number | null;
+      startTimestamp: number;
+    }[];
+  }[],
+): number {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
@@ -48,7 +44,9 @@ function getTodayMinutes(tasks: Task[]): number {
   }, 0);
 }
 
-function getTodayTaskCount(tasks: Task[]): number {
+function getTodayTaskCount(
+  tasks: { logs: { startTimestamp: number; endTimestamp: number | null }[] }[],
+): number {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
@@ -61,132 +59,19 @@ function getTodayTaskCount(tasks: Task[]): number {
   ).length;
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-
-export default function Home() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+function HomeContent() {
+  const { tasks, loading, runningCount, createTask, exportTasks, importTasks } =
+    useTaskContext();
   const [, setTick] = useState(0);
 
-  const hasRunning = tasks.some((t) =>
-    t.logs.some((l) => l.endTimestamp === null),
-  );
-
   useEffect(() => {
-    if (!hasRunning) return;
+    if (runningCount === 0) return;
     const id = setInterval(() => setTick((n) => n + 1), 1000);
     return () => clearInterval(id);
-  }, [hasRunning]);
-
-  useEffect(() => {
-    getAllTasks()
-      .then((t) =>
-        setTasks(
-          t.sort((a, b) => {
-            const aRunning = a.logs.some((l) => l.endTimestamp === null)
-              ? 1
-              : 0;
-            const bRunning = b.logs.some((l) => l.endTimestamp === null)
-              ? 1
-              : 0;
-            if (bRunning !== aRunning) return bRunning - aRunning;
-            return b.logs.length - a.logs.length;
-          }),
-        ),
-      )
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleCreate = useCallback(async (name: string, tags: string[]) => {
-    const task: Task = { id: generateId(), name, tags, logs: [] };
-    await saveTask(task);
-    setTasks((prev) => [task, ...prev]);
-  }, []);
-
-  const handleUpdate = useCallback((updated: Task) => {
-    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-  }, []);
-
-  const handleStart = useCallback(async (taskId: string) => {
-    const now = Date.now();
-    let updatedRunning: Task | null = null;
-    setTasks((prev) => {
-      const runningTask = prev.find((t) =>
-        t.logs.some((l) => l.endTimestamp === null),
-      );
-      if (runningTask) {
-        const updatedLogs: TimeLog[] = runningTask.logs.map((log) => {
-          if (log.endTimestamp !== null) return log;
-          const minutes = (now - log.startTimestamp) / 1000 / 60;
-          return { ...log, endTimestamp: now, minutesSpent: minutes };
-        });
-        updatedRunning = { ...runningTask, logs: updatedLogs };
-        saveTask(updatedRunning);
-        if (runningTask.id === taskId) return prev;
-      }
-      const taskToStart = prev.find((t) => t.id === taskId);
-      if (!taskToStart) return prev;
-      const newLog: TimeLog = {
-        startTimestamp: now,
-        endTimestamp: null,
-        minutesSpent: null,
-      };
-      const updated: Task = {
-        ...taskToStart,
-        logs: [...taskToStart.logs, newLog],
-      };
-      saveTask(updated);
-      return [
-        updated,
-        ...prev
-          .filter((t) => t.id !== taskId)
-          .map((t) => (t.id === runningTask?.id ? updatedRunning! : t)),
-      ];
-    });
-  }, []);
-
-  const handleDelete = useCallback((id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
-  const handleExport = useCallback(() => {
-    const data = JSON.stringify(tasks, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `1timer-export-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [tasks]);
-
-  const handleImport = useCallback(async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const imported = JSON.parse(text) as Task[];
-        if (!Array.isArray(imported)) throw new Error("Invalid format");
-        await importTasks(imported);
-        setTasks(imported);
-      } catch {
-        alert("Failed to import: invalid file format");
-      }
-    };
-    input.click();
-  }, []);
-
-  const runningCount = tasks.filter((t) =>
-    t.logs.some((l) => l.endTimestamp === null),
-  ).length;
+  }, [runningCount]);
 
   return (
     <main className="min-h-screen bg-background">
-      {/* ── Header ── */}
       <header className="border-b border-border/50 bg-card/60 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
@@ -208,14 +93,14 @@ export default function Home() {
             <ThemeToggle />
             <div className="flex items-center gap-1 border-l border-border pl-3">
               <button
-                onClick={handleExport}
+                onClick={exportTasks}
                 className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Export data"
               >
                 <Download className="size-4" />
               </button>
               <button
-                onClick={handleImport}
+                onClick={importTasks}
                 className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Import data"
               >
@@ -228,11 +113,9 @@ export default function Home() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,340px)_1fr] gap-8 items-start">
-          {/* ── Sidebar: Form + Stats ── */}
           <div className="flex flex-col gap-5 lg:sticky lg:top-20">
-            <TaskForm onSubmit={handleCreate} />
+            <TaskForm onSubmit={createTask} />
 
-            {/* Stats */}
             {tasks.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-card border border-border rounded-xl p-3.5">
@@ -261,7 +144,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* ── Task list ── */}
           <div className="flex flex-col gap-3">
             {loading ? (
               <div className="flex flex-col gap-3">
@@ -308,12 +190,7 @@ export default function Home() {
                         damping: 30,
                       }}
                     >
-                      <TaskCard
-                        task={task}
-                        onUpdate={handleUpdate}
-                        onDelete={handleDelete}
-                        onStart={handleStart}
-                      />
+                      <TaskCard task={task} />
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -323,5 +200,13 @@ export default function Home() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <TaskProvider>
+      <HomeContent />
+    </TaskProvider>
   );
 }

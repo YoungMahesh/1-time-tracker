@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Play, Square, Trash2, Clock, Tag, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,25 +13,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  type Task,
-  type TimeLog,
-  saveTask,
-  deleteTask,
-  formatDuration,
-} from "@/lib/db";
+import { type Task, formatDuration } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { ScreenWakeLock } from "@/components/screen-wake-lock";
 import { SessionLogs } from "@/components/session-logs";
+import { useTaskContext } from "@/lib/context/task-context";
 
 interface TaskCardProps {
   task: Task;
-  onUpdate: (task: Task) => void;
-  onDelete: (id: string) => void;
-  onStart: (taskId: string) => void;
 }
 
-export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
+export function TaskCard({ task }: TaskCardProps) {
+  const { startTask, stopTask, deleteTask } = useTaskContext();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionDeleteDialogOpen, setSessionDeleteDialogOpen] = useState(false);
@@ -42,7 +35,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
   const activeLog = task.logs.find((l) => l.endTimestamp === null);
   const isRunning = Boolean(activeLog);
 
-  // Live timer tick
   useEffect(() => {
     if (!isRunning || !activeLog) return;
     const interval = setInterval(() => {
@@ -53,7 +45,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
     return () => clearInterval(interval);
   }, [isRunning, activeLog]);
 
-  // Close popover on outside click
   useEffect(() => {
     if (!popoverOpen) return;
     const handler = (e: MouseEvent) => {
@@ -71,42 +62,27 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
     return () => document.removeEventListener("mousedown", handler);
   }, [popoverOpen, sessionDeleteDialogOpen]);
 
-  const handleStart = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (isRunning) return;
-      onStart(task.id);
-    },
-    [isRunning, onStart, task.id],
-  );
+  const handleStart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isRunning) return;
+    startTask(task.id);
+  };
 
-  const handleStop = useCallback(
-    async (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!isRunning) return;
-      const now = Date.now();
-      const updatedLogs: TimeLog[] = task.logs.map((log) => {
-        if (log.endTimestamp !== null) return log;
-        const minutes = (now - log.startTimestamp) / 1000 / 60;
-        return { ...log, endTimestamp: now, minutesSpent: minutes };
-      });
-      const updated: Task = { ...task, logs: updatedLogs };
-      await saveTask(updated);
-      onUpdate(updated);
-      setLiveElapsed(0);
-    },
-    [task, isRunning, onUpdate],
-  );
+  const handleStop = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isRunning) return;
+    await stopTask(task.id);
+    setLiveElapsed(0);
+  };
 
-  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setDeleteDialogOpen(true);
-  }, []);
+  };
 
-  const handleDeleteConfirm = useCallback(async () => {
-    await deleteTask(task.id);
-    onDelete(task.id);
-  }, [task.id, onDelete]);
+  const handleDeleteConfirm = async () => {
+    deleteTask(task.id);
+  };
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -125,7 +101,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
     ? todayMinutes + liveElapsed / 60
     : todayMinutes;
 
-  // Color tag for running indicator
   const tagColors = [
     "bg-violet-500/15 text-violet-400",
     "bg-sky-500/15 text-sky-400",
@@ -138,7 +113,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
   return (
     <div className="relative">
       <ScreenWakeLock isRunning={isRunning} />
-      {/* Card */}
       <div
         ref={cardRef}
         onClick={() => setPopoverOpen((prev) => !prev)}
@@ -151,7 +125,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
           isRunning && "border-emerald-500/40 shadow-emerald-500/10 shadow-md",
         )}
       >
-        {/* Running pulse border */}
         {isRunning && (
           <div className="absolute inset-0 rounded-xl border border-emerald-500/30 animate-pulse pointer-events-none" />
         )}
@@ -170,7 +143,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
               </h3>
             </div>
 
-            {/* Tags */}
             {task.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-3">
                 {task.tags.map((tag, i) => (
@@ -188,7 +160,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
               </div>
             )}
 
-            {/* Today's time */}
             <div className="flex items-center gap-1.5">
               <Clock className="size-4 text-muted-foreground/60 shrink-0" />
               <span className="text-sm font-mono font-bold tabular-nums text-foreground/80">
@@ -221,7 +192,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
             </div>
           </div>
 
-          {/* Controls */}
           <div className="flex items-center gap-1 shrink-0">
             {!isRunning ? (
               <Button
@@ -277,7 +247,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Popover */}
       {popoverOpen && (
         <div
           ref={popoverRef}
@@ -288,7 +257,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
           )}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
           <div className="px-4 pt-4 pb-3 border-b border-border/50">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -321,7 +289,6 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
             </div>
           </div>
 
-          {/* Logs */}
           <div className="px-4 py-3">
             <div className="flex items-center gap-1.5 mb-2">
               <CalendarClock className="size-4 text-muted-foreground/60" />
@@ -330,12 +297,8 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
               </span>
             </div>
             <SessionLogs
+              taskId={task.id}
               logs={task.logs}
-              onUpdate={(logs) => {
-                const updated = { ...task, logs };
-                saveTask(updated);
-                onUpdate(updated);
-              }}
               onDeleteDialogOpenChange={setSessionDeleteDialogOpen}
             />
           </div>

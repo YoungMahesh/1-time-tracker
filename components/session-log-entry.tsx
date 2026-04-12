@@ -116,6 +116,16 @@ function EditSessionForm({
   );
 }
 
+interface SessionLogEntryProps {
+  log: TimeLog;
+  index: number;
+  onUpdate: (updated: TimeLog) => void;
+  onDelete: () => void;
+  onCancel: () => void;
+  onStartEditing: () => void;
+  isEditing: boolean;
+}
+
 export default function SessionLogEntry({
   log,
   index,
@@ -124,15 +134,7 @@ export default function SessionLogEntry({
   onCancel,
   onStartEditing,
   isEditing,
-}: {
-  log: TimeLog;
-  index: number;
-  onUpdate: (updated: TimeLog) => void;
-  onDelete: () => void;
-  onCancel: () => void;
-  onStartEditing: () => void;
-  isEditing: boolean;
-}) {
+}: SessionLogEntryProps) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {

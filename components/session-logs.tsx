@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { type TimeLog, formatDuration } from "@/lib/db";
 import { cn } from "@/lib/utils";
+import { useTaskContext } from "@/lib/context/task-context";
 import SessionLogEntry from "./session-log-entry";
 
 interface GroupedLogs {
@@ -59,16 +60,17 @@ function groupLogsByDate(logs: TimeLog[]): GroupedLogs[] {
 }
 
 interface SessionLogsProps {
+  taskId: string;
   logs: TimeLog[];
-  onUpdate: (logs: TimeLog[]) => void;
   onDeleteDialogOpenChange?: (open: boolean) => void;
 }
 
 export function SessionLogs({
+  taskId,
   logs,
-  onUpdate,
   onDeleteDialogOpenChange,
 }: SessionLogsProps) {
+  const { updateTaskLogs } = useTaskContext();
   const grouped = groupLogsByDate([...logs].reverse());
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const [showAddForm, setShowAddForm] = useState(false);
@@ -103,18 +105,24 @@ export function SessionLogs({
       endTimestamp: end,
       minutesSpent,
     };
-    onUpdate([...logs, newLog]);
+    updateTaskLogs(taskId, [...logs, newLog]);
     setNewStart("");
     setNewEnd("");
     setShowAddForm(false);
   };
 
   const handleUpdateLog = (originalLog: TimeLog, updated: TimeLog) => {
-    onUpdate(logs.map((l) => (l === originalLog ? updated : l)));
+    updateTaskLogs(
+      taskId,
+      logs.map((l) => (l === originalLog ? updated : l)),
+    );
   };
 
   const handleDeleteLog = (startTimestamp: number) => {
-    onUpdate(logs.filter((l) => l.startTimestamp !== startTimestamp));
+    updateTaskLogs(
+      taskId,
+      logs.filter((l) => l.startTimestamp !== startTimestamp),
+    );
   };
 
   const confirmDeleteLog = () => {
