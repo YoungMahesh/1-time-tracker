@@ -47,6 +47,5 @@ User can start and stop tracker for a task.
 ### Create Final output
 
 1. **Summary**: What was implemented
-2. **Validation**: Confirmation that lint and typecheck pass
-3. **Wrong or Missing Context**: Tell me anything provided in this documentation was wrong or more could have been part of the context given to you because of which it would have been easier for you to implement these changes. If there is nothing missing, say "None"
-4. **Commit Message**: A concise message describing the change which I can paste into git commit
+2. **Wrong or Missing Context**: Tell me anything provided in this documentation was wrong or more could have been part of the context given to you because of which it would have been easier for you to implement these changes. If there is nothing missing, say "None"
+3. **Commit Message**: A concise message describing the change which I can paste into git commit
