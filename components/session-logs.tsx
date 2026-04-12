@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 import { ChevronRight, Plus, Check, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { type TimeLog, formatDuration } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import SessionLogEntry from "./session-log-entry";
@@ -51,9 +61,14 @@ function groupLogsByDate(logs: TimeLog[]): GroupedLogs[] {
 interface SessionLogsProps {
   logs: TimeLog[];
   onUpdate: (logs: TimeLog[]) => void;
+  onDeleteDialogOpenChange?: (open: boolean) => void;
 }
 
-export function SessionLogs({ logs, onUpdate }: SessionLogsProps) {
+export function SessionLogs({
+  logs,
+  onUpdate,
+  onDeleteDialogOpenChange,
+}: SessionLogsProps) {
   const grouped = groupLogsByDate([...logs].reverse());
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const [showAddForm, setShowAddForm] = useState(false);
@@ -217,7 +232,11 @@ export function SessionLogs({ logs, onUpdate }: SessionLogsProps) {
                     log={log}
                     index={globalIndex}
                     onUpdate={(updated) => handleUpdateLog(log, updated)}
-                    onDelete={() => setDeleteLogTimestamp(log.startTimestamp)}
+                    onDelete={() => {
+                      setDeleteLogTimestamp(log.startTimestamp);
+                      onDeleteDialogOpenChange?.(true);
+                    }}
+                    onCancel={() => setEditingLogTimestamp(null)}
                     onStartEditing={() =>
                       setEditingLogTimestamp(log.startTimestamp)
                     }
@@ -229,45 +248,38 @@ export function SessionLogs({ logs, onUpdate }: SessionLogsProps) {
           )}
         </div>
       ))}
-      {deleteLogTimestamp !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/10"
-          onClick={() => setDeleteLogTimestamp(null)}
-        >
-          <div
-            className="bg-popover border border-border rounded-xl p-4 shadow-xl max-w-xs w-full mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h4 className="font-semibold text-base text-foreground mb-1">
-              Delete Session
-            </h4>
-            <p className="text-base text-muted-foreground mb-4">
+      <AlertDialog
+        open={deleteLogTimestamp !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteLogTimestamp(null);
+            onDeleteDialogOpenChange?.(false);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Session</AlertDialogTitle>
+            <AlertDialogDescription>
               Are you sure you want to delete this session? This action cannot
               be undone.
-            </p>
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeleteLogTimestamp(null);
-                }}
-                className="px-3 py-1.5 text-base font-medium rounded-md border border-border hover:bg-muted/50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  confirmDeleteLog();
-                }}
-                className="px-3 py-1.5 text-base font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.stopPropagation();
+                confirmDeleteLog();
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

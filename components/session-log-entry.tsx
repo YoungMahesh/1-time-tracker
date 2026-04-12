@@ -30,11 +30,13 @@ function EditSessionForm({
   index,
   onUpdate,
   onDelete,
+  onCancel,
 }: {
   log: TimeLog;
   index: number;
   onUpdate: (updated: TimeLog) => void;
   onDelete: () => void;
+  onCancel: () => void;
 }) {
   const [editStart, setEditStart] = useState(
     toLocalDateTime(log.startTimestamp),
@@ -78,7 +80,7 @@ function EditSessionForm({
             <X className="size-5" />
           </button>
           <button
-            onClick={onDelete}
+            onClick={onCancel}
             className="p-1 text-muted-foreground hover:bg-muted/10 rounded"
             title="Cancel"
           >
@@ -119,6 +121,7 @@ export default function SessionLogEntry({
   index,
   onUpdate,
   onDelete,
+  onCancel,
   onStartEditing,
   isEditing,
 }: {
@@ -126,6 +129,7 @@ export default function SessionLogEntry({
   index: number;
   onUpdate: (updated: TimeLog) => void;
   onDelete: () => void;
+  onCancel: () => void;
   onStartEditing: () => void;
   isEditing: boolean;
 }) {
@@ -152,6 +156,7 @@ export default function SessionLogEntry({
           index={index}
           onUpdate={onUpdate}
           onDelete={onDelete}
+          onCancel={onCancel}
         />
       ) : (
         <div className="flex items-start gap-3 py-2.5 border-b border-border/40 last:border-0 group">
@@ -210,4 +215,3 @@ export default function SessionLogEntry({
     </>
   );
 }
-

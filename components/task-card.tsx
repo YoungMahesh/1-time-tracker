@@ -34,6 +34,7 @@ interface TaskCardProps {
 export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [sessionDeleteDialogOpen, setSessionDeleteDialogOpen] = useState(false);
   const [liveElapsed, setLiveElapsed] = useState(0);
   const popoverRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -56,6 +57,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
   useEffect(() => {
     if (!popoverOpen) return;
     const handler = (e: MouseEvent) => {
+      if (sessionDeleteDialogOpen) return;
       if (
         popoverRef.current &&
         !popoverRef.current.contains(e.target as Node) &&
@@ -67,7 +69,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [popoverOpen]);
+  }, [popoverOpen, sessionDeleteDialogOpen]);
 
   const handleStart = useCallback(
     (e: React.MouseEvent) => {
@@ -290,9 +292,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
           <div className="px-4 pt-4 pb-3 border-b border-border/50">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h4 className="font-semibold text-foreground">
-                  {task.name}
-                </h4>
+                <h4 className="font-semibold text-foreground">{task.name}</h4>
                 {task.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {task.tags.map((tag, i) => (
@@ -336,6 +336,7 @@ export function TaskCard({ task, onUpdate, onDelete, onStart }: TaskCardProps) {
                 saveTask(updated);
                 onUpdate(updated);
               }}
+              onDeleteDialogOpenChange={setSessionDeleteDialogOpen}
             />
           </div>
         </div>
