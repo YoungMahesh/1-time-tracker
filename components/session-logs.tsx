@@ -247,9 +247,7 @@ interface SessionLogsProps {
 
 export function SessionLogs({ logs, onUpdate }: SessionLogsProps) {
   const grouped = groupLogsByDate([...logs].reverse());
-  const [expandedDates, setExpandedDates] = useState<Set<string>>(
-    () => new Set(grouped.map((g) => g.date)),
-  );
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const [showAddForm, setShowAddForm] = useState(false);
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
