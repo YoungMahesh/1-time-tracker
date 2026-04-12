@@ -63,12 +63,14 @@ interface SessionLogsProps {
   taskId: string;
   logs: TimeLog[];
   onDeleteDialogOpenChange?: (open: boolean) => void;
+  onUpdateDialogOpenChange?: (open: boolean) => void;
 }
 
 export function SessionLogs({
   taskId,
   logs,
   onDeleteDialogOpenChange,
+  onUpdateDialogOpenChange,
 }: SessionLogsProps) {
   const { updateTaskLogs } = useTaskContext();
   const grouped = groupLogsByDate([...logs].reverse());
@@ -249,6 +251,7 @@ export function SessionLogs({
                       setEditingLogTimestamp(log.startTimestamp)
                     }
                     isEditing={editingLogTimestamp === log.startTimestamp}
+                    onUpdateDialogOpenChange={onUpdateDialogOpenChange}
                   />
                 );
               })}

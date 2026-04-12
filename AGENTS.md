@@ -10,10 +10,10 @@ User can start and stop tracker for a task.
 
 ## Tech Stack
 
-- Framework: NextJS App Router
+- Framework: NextJS v16 App Router
 - Package Manager: pnpm
 
-- Styling: TailwindCSS
+- Styling: TailwindCSS v4
 - UI Components: Shadcn UI with Base UI
 - Icons: lucide-react
 
@@ -26,6 +26,7 @@ User can start and stop tracker for a task.
   - `components/ui` - UI components from shadcn
 - `lib/types/` — TypeScript types and interfaces
 - `lib/db.ts` - Database operations
+- `lib/context/` - React Contexts
 
 # Instructions for AI Agents:
 

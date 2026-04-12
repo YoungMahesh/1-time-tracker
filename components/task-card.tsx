@@ -28,6 +28,7 @@ export function TaskCard({ task }: TaskCardProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionDeleteDialogOpen, setSessionDeleteDialogOpen] = useState(false);
+  const [sessionUpdateDialogOpen, setSessionUpdateDialogOpen] = useState(false);
   const [liveElapsed, setLiveElapsed] = useState(0);
   const popoverRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -48,7 +49,7 @@ export function TaskCard({ task }: TaskCardProps) {
   useEffect(() => {
     if (!popoverOpen) return;
     const handler = (e: MouseEvent) => {
-      if (sessionDeleteDialogOpen) return;
+      if (sessionDeleteDialogOpen || sessionUpdateDialogOpen) return;
       if (
         popoverRef.current &&
         !popoverRef.current.contains(e.target as Node) &&
@@ -60,7 +61,7 @@ export function TaskCard({ task }: TaskCardProps) {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [popoverOpen, sessionDeleteDialogOpen]);
+  }, [popoverOpen, sessionDeleteDialogOpen, sessionUpdateDialogOpen]);
 
   const handleStart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -300,6 +301,7 @@ export function TaskCard({ task }: TaskCardProps) {
               taskId={task.id}
               logs={task.logs}
               onDeleteDialogOpenChange={setSessionDeleteDialogOpen}
+              onUpdateDialogOpenChange={setSessionUpdateDialogOpen}
             />
           </div>
         </div>

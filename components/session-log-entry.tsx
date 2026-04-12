@@ -4,6 +4,15 @@ import { useState, useEffect } from "react";
 import { ChevronRight, Pencil, Check, X } from "lucide-react";
 import { type TimeLog, formatDuration, formatTimestamp } from "@/lib/db";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function toLocalDateTime(ts: number) {
   return new Date(ts)
@@ -31,12 +40,14 @@ function EditSessionForm({
   onUpdate,
   onDelete,
   onCancel,
+  onUpdateDialogOpenChange,
 }: {
   log: TimeLog;
   index: number;
   onUpdate: (updated: TimeLog) => void;
   onDelete: () => void;
   onCancel: () => void;
+  onUpdateDialogOpenChange?: (open: boolean) => void;
 }) {
   const [editStart, setEditStart] = useState(
     toLocalDateTime(log.startTimestamp),
@@ -44,8 +55,13 @@ function EditSessionForm({
   const [editEnd, setEditEnd] = useState(
     log.endTimestamp !== null ? toLocalDateTime(log.endTimestamp) : "",
   );
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
   const saveEditing = () => {
+    setSaveDialogOpen(true);
+  };
+
+  const confirmSave = () => {
     const newStart = parseLocalDateTime(editStart);
     const newEnd = editEnd ? parseLocalDateTime(editEnd) : null;
     const minutesSpent =
@@ -56,63 +72,123 @@ function EditSessionForm({
       endTimestamp: newEnd,
       minutesSpent,
     });
+    setSaveDialogOpen(false);
   };
 
+  useEffect(() => {
+    onUpdateDialogOpenChange?.(saveDialogOpen);
+  }, [saveDialogOpen, onUpdateDialogOpenChange]);
+
+  const newStart = parseLocalDateTime(editStart);
+  const newEnd = editEnd ? parseLocalDateTime(editEnd) : null;
+  const oldDuration =
+    log.endTimestamp !== null ? log.endTimestamp - log.startTimestamp : null;
+  const newDuration = newEnd !== null ? newEnd - newStart : null;
+
   return (
-    <div className="py-2.5 border-b border-border/40 last:border-0 space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="text-base font-semibold text-muted-foreground">
-          Edit Session #{index + 1}
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={saveEditing}
-            className="p-1 text-emerald-500 hover:bg-emerald-500/10 rounded"
-            title="Save"
-          >
-            <Check className="size-5" />
-          </button>
-          <button
-            onClick={onDelete}
-            className="p-1 text-destructive hover:bg-destructive/10 rounded"
-            title="Delete"
-          >
-            <X className="size-5" />
-          </button>
-          <button
-            onClick={onCancel}
-            className="p-1 text-muted-foreground hover:bg-muted/10 rounded"
-            title="Cancel"
-          >
-            <X className="size-5" />
-          </button>
+    <>
+      <div className="py-2.5 border-b border-border/40 last:border-0 space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="text-base font-semibold text-muted-foreground">
+            Edit Session #{index + 1}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={saveEditing}
+              className="p-1 text-emerald-500 hover:bg-emerald-500/10 rounded"
+              title="Save"
+            >
+              <Check className="size-5" />
+            </button>
+            <button
+              onClick={onDelete}
+              className="p-1 text-destructive hover:bg-destructive/10 rounded"
+              title="Delete"
+            >
+              <X className="size-5" />
+            </button>
+            <button
+              onClick={onCancel}
+              className="p-1 text-muted-foreground hover:bg-muted/10 rounded"
+              title="Cancel"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-base text-muted-foreground uppercase tracking-wider">
+              Start
+            </label>
+            <input
+              type="datetime-local"
+              value={editStart}
+              onChange={(e) => setEditStart(e.target.value)}
+              className="w-full rounded border border-border bg-background px-2 py-1 text-base text-foreground outline-none focus:border-primary"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-base text-muted-foreground uppercase tracking-wider">
+              End
+            </label>
+            <input
+              type="datetime-local"
+              value={editEnd}
+              onChange={(e) => setEditEnd(e.target.value)}
+              className="w-full rounded border border-border bg-background px-2 py-1 text-base text-foreground outline-none focus:border-primary"
+            />
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="flex flex-col gap-1">
-          <label className="text-base text-muted-foreground uppercase tracking-wider">
-            Start
-          </label>
-          <input
-            type="datetime-local"
-            value={editStart}
-            onChange={(e) => setEditStart(e.target.value)}
-            className="w-full rounded border border-border bg-background px-2 py-1 text-base text-foreground outline-none focus:border-primary"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-base text-muted-foreground uppercase tracking-wider">
-            End
-          </label>
-          <input
-            type="datetime-local"
-            value={editEnd}
-            onChange={(e) => setEditEnd(e.target.value)}
-            className="w-full rounded border border-border bg-background px-2 py-1 text-base text-foreground outline-none focus:border-primary"
-          />
-        </div>
-      </div>
-    </div>
+      <AlertDialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Session</AlertDialogTitle>
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to save the changes?
+            </p>
+            <div className="mt-2 space-y-1 text-sm">
+              <div>
+                <span className="font-medium text-foreground">Start:</span>{" "}
+                {formatTimestamp(log.startTimestamp)} →{" "}
+                {formatTimestamp(newStart)}
+              </div>
+              <div>
+                <span className="font-medium text-foreground">End:</span>{" "}
+                {log.endTimestamp !== null
+                  ? formatTimestamp(log.endTimestamp)
+                  : "none"}{" "}
+                → {newEnd !== null ? formatTimestamp(newEnd) : "none"}
+              </div>
+              <div>
+                <span className="font-medium text-foreground">Duration:</span>{" "}
+                {oldDuration !== null
+                  ? formatDuration(oldDuration / 1000 / 60)
+                  : "running"}{" "}
+                →{" "}
+                {newDuration !== null
+                  ? formatDuration(newDuration / 1000 / 60)
+                  : "running"}
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.stopPropagation();
+                confirmSave();
+              }}
+            >
+              Save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -124,6 +200,7 @@ interface SessionLogEntryProps {
   onCancel: () => void;
   onStartEditing: () => void;
   isEditing: boolean;
+  onUpdateDialogOpenChange?: (open: boolean) => void;
 }
 
 export default function SessionLogEntry({
@@ -134,6 +211,7 @@ export default function SessionLogEntry({
   onCancel,
   onStartEditing,
   isEditing,
+  onUpdateDialogOpenChange,
 }: SessionLogEntryProps) {
   const [elapsed, setElapsed] = useState(0);
 
@@ -159,6 +237,7 @@ export default function SessionLogEntry({
           onUpdate={onUpdate}
           onDelete={onDelete}
           onCancel={onCancel}
+          onUpdateDialogOpenChange={onUpdateDialogOpenChange}
         />
       ) : (
         <div className="flex items-start gap-3 py-2.5 border-b border-border/40 last:border-0 group">
