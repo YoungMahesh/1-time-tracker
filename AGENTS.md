@@ -19,6 +19,8 @@ User can start and stop tracker for a task.
 
 - Database: IndexedDB
 
+- Progressive Web App support: Service Worker file is built using using `scripts/build-sw.mjs`
+
 ## Structure
 
 - `app/` — Next.js App Router (layouts, pages, API routes, server actions)
