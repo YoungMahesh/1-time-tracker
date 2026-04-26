@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Clock, Layers, TimerReset, Download, Upload } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AnimatePresence, motion } from "framer-motion";
-import { TaskForm } from "@/components/task-form";
+import { NewTaskButton } from "@/components/new-task-button";
 import { TaskCard } from "@/components/task-card";
 import { TaskProvider, useTaskContext } from "@/lib/context/task-context";
 import { formatDuration } from "@/lib/db";
@@ -114,7 +114,7 @@ function HomeContent() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,340px)_1fr] gap-8 items-start">
           <div className="flex flex-col gap-5 lg:sticky lg:top-20">
-            <TaskForm onSubmit={createTask} />
+            <NewTaskButton onSubmit={createTask} />
 
             {tasks.length > 0 && (
               <div className="grid grid-cols-2 gap-3">

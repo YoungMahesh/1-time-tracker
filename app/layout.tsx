@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import {
+  ThemeInitialization,
+  ServiceWorkerRegistration,
+} from "@/components/client-scripts";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -46,35 +49,8 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", jetbrainsMono.variable)}
     >
       <head>
-        <Script
-          id="theme-initialization"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                var theme = localStorage.getItem('theme');
-                if (theme === 'light') {
-                  document.documentElement.classList.remove('dark');
-                } else {
-                  document.documentElement.classList.add('dark');
-                }
-              })();
-            `,
-          }}
-        />
-        <Script
-          id="service-worker-registration"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
-          }}
-        />
+        <ThemeInitialization />
+        <ServiceWorkerRegistration />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
