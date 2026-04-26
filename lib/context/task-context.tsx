@@ -11,6 +11,7 @@ import {
 import {
   getAllTasks,
   saveTask,
+  deleteTask as dbDeleteTask,
   importTasks as dbImportTasks,
   type Task,
   type TimeLog,
@@ -26,7 +27,7 @@ interface TaskContextValue {
   runningCount: number;
   createTask: (name: string, tags: string[]) => Promise<void>;
   updateTask: (task: Task) => void;
-  deleteTask: (id: string) => void;
+  deleteTask: (id: string) => Promise<void>;
   startTask: (taskId: string) => Promise<void>;
   stopTask: (taskId: string) => Promise<void>;
   updateTaskLogs: (taskId: string, logs: TimeLog[]) => void;
@@ -73,7 +74,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   }, []);
 
-  const deleteTask = useCallback((id: string) => {
+  const deleteTask = useCallback(async (id: string) => {
+    await dbDeleteTask(id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }, []);
 

@@ -82,7 +82,7 @@ export function TaskCard({ task }: TaskCardProps) {
   };
 
   const handleDeleteConfirm = async () => {
-    deleteTask(task.id);
+    await deleteTask(task.id);
   };
 
   const todayStart = new Date();
