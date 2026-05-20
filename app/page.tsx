@@ -7,42 +7,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { NewTaskButton } from "@/components/new-task-button";
 import { TaskCard } from "@/components/task-card";
 import { TaskProvider, useTaskContext } from "@/lib/context/task-context";
-import { formatDuration } from "@/lib/db";
+import { TimeByDay } from "@/components/time-by-day";
 import { cn } from "@/lib/utils";
-
-function getTodayMinutes(
-  tasks: {
-    logs: {
-      endTimestamp: number | null;
-      minutesSpent: number | null;
-      startTimestamp: number;
-    }[];
-  }[],
-): number {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  return tasks.reduce((acc, task) => {
-    const completed = task.logs
-      .filter((l) => {
-        if (l.endTimestamp === null) return false;
-        const logDate = new Date(l.startTimestamp);
-        logDate.setHours(0, 0, 0, 0);
-        return logDate.getTime() === todayStart.getTime();
-      })
-      .reduce((s, l) => s + (l.minutesSpent ?? 0), 0);
-    const active = task.logs.find((l) => {
-      if (l.endTimestamp !== null) return false;
-      const logDate = new Date(l.startTimestamp);
-      logDate.setHours(0, 0, 0, 0);
-      return logDate.getTime() === todayStart.getTime();
-    });
-    const liveSeconds = active
-      ? (Date.now() - active.startTimestamp) / 1000
-      : 0;
-    return acc + completed + liveSeconds / 60;
-  }, 0);
-}
 
 function getTodayTaskCount(
   tasks: { logs: { startTimestamp: number; endTimestamp: number | null }[] }[],
@@ -117,7 +83,7 @@ function HomeContent() {
             <NewTaskButton onSubmit={createTask} />
 
             {tasks.length > 0 && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-3">
                 <div className="bg-card border border-border rounded-xl p-3.5">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Layers className="size-3.5 text-muted-foreground/60" />
@@ -129,17 +95,7 @@ function HomeContent() {
                     {getTodayTaskCount(tasks)}
                   </span>
                 </div>
-                <div className="bg-card border border-border rounded-xl p-3.5">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Clock className="size-3.5 text-muted-foreground/60" />
-                    <span className="text-xs text-muted-foreground/60 uppercase tracking-widest font-medium">
-                      Total Today
-                    </span>
-                  </div>
-                  <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
-                    {formatDuration(getTodayMinutes(tasks))}
-                  </span>
-                </div>
+                <TimeByDay tasks={tasks} />
               </div>
             )}
           </div>
