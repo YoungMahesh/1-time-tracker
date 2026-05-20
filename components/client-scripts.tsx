@@ -6,7 +6,6 @@ export function ThemeInitialization() {
   return (
     <Script
       id="theme-initialization"
-      strategy="beforeInteractive"
       dangerouslySetInnerHTML={{
         __html: `
         (function() {
