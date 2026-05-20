@@ -18,6 +18,8 @@ interface TaskNameEditProps {
   onRename: (newName: string) => void;
   onDeleteRequest: () => void;
   onCancel: () => void;
+  isEditing?: boolean;
+  onEditStateChange?: (editing: boolean) => void;
 }
 
 export function TaskNameEdit({
@@ -25,15 +27,20 @@ export function TaskNameEdit({
   onRename,
   onDeleteRequest,
   onCancel,
+  isEditing: externalIsEditing,
+  onEditStateChange,
 }: TaskNameEditProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [internalIsEditing, setInternalIsEditing] = useState(false);
   const [editedName, setEditedName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const isEditing = externalIsEditing ?? internalIsEditing;
+
   const handleStartEdit = () => {
     setEditedName(taskName);
-    setIsEditing(true);
+    setInternalIsEditing(true);
+    onEditStateChange?.(true);
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
@@ -43,17 +50,20 @@ export function TaskNameEdit({
 
   const handleConfirmSave = () => {
     onRename(editedName);
-    setIsEditing(false);
+    setInternalIsEditing(false);
+    onEditStateChange?.(false);
     setDialogOpen(false);
   };
 
   const handleCancel = () => {
-    setIsEditing(false);
+    setInternalIsEditing(false);
+    onEditStateChange?.(false);
     onCancel();
   };
 
   const handleDelete = () => {
-    setIsEditing(false);
+    setInternalIsEditing(false);
+    onEditStateChange?.(false);
     onDeleteRequest();
   };
 

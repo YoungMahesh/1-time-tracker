@@ -31,6 +31,7 @@ export function TaskCard({ task }: TaskCardProps) {
   const [sessionDeleteDialogOpen, setSessionDeleteDialogOpen] = useState(false);
   const [sessionUpdateDialogOpen, setSessionUpdateDialogOpen] = useState(false);
   const [liveElapsed, setLiveElapsed] = useState(0);
+  const [isEditingTask, setIsEditingTask] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -141,6 +142,8 @@ export function TaskCard({ task }: TaskCardProps) {
                   onRename={(newName) => renameTask(task.id, newName)}
                   onDeleteRequest={() => setDeleteDialogOpen(true)}
                   onCancel={() => {}}
+                  isEditing={isEditingTask}
+                  onEditStateChange={setIsEditingTask}
                 />
               </div>
 
@@ -162,29 +165,31 @@ export function TaskCard({ task }: TaskCardProps) {
               )}
             </div>
 
-            <div className="shrink-0 flex-1">
-              {!isRunning ? (
-                <Button
-                  variant="ghost"
-                  onClick={handleStart}
-                  title="Start timer"
-                  className="text-emerald-500 hover:text-emerald-400 bg-emerald-500/10 gap-2 w-full"
-                >
-                  <Play className="size-4 fill-current" />
-                  Start
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  onClick={handleStop}
-                  title="Stop timer"
-                  className="text-amber-500 hover:text-amber-400 bg-amber-500/10 gap-2 w-full"
-                >
-                  <Square className="size-4 fill-current" />
-                  Stop
-                </Button>
-              )}
-            </div>
+            {!isEditingTask && (
+              <div className="shrink-0 flex-1">
+                {!isRunning ? (
+                  <Button
+                    variant="ghost"
+                    onClick={handleStart}
+                    title="Start timer"
+                    className="text-emerald-500 hover:text-emerald-400 bg-emerald-500/10 gap-2 w-full"
+                  >
+                    <Play className="size-4 fill-current" />
+                    Start
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    onClick={handleStop}
+                    title="Stop timer"
+                    className="text-amber-500 hover:text-amber-400 bg-amber-500/10 gap-2 w-full"
+                  >
+                    <Square className="size-4 fill-current" />
+                    Stop
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
           <TaskDuration
             todayLiveTotal={todayLiveTotal}
