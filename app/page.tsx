@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, Layers, TimerReset, Download, Upload } from "lucide-react";
+import { Clock, TimerReset, Download, Upload } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AnimatePresence, motion } from "framer-motion";
 import { NewTaskButton } from "@/components/new-task-button";
@@ -9,21 +9,6 @@ import { TaskCard } from "@/components/task-card";
 import { TaskProvider, useTaskContext } from "@/lib/context/task-context";
 import { TimeByDay } from "@/components/time-by-day";
 import { cn } from "@/lib/utils";
-
-function getTodayTaskCount(
-  tasks: { logs: { startTimestamp: number; endTimestamp: number | null }[] }[],
-): number {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  return tasks.filter((task) =>
-    task.logs.some((l) => {
-      const logDate = new Date(l.startTimestamp);
-      logDate.setHours(0, 0, 0, 0);
-      return logDate.getTime() === todayStart.getTime();
-    }),
-  ).length;
-}
 
 function HomeContent() {
   const { tasks, loading, runningCount, createTask, exportTasks, importTasks } =
@@ -84,17 +69,6 @@ function HomeContent() {
 
             {tasks.length > 0 && (
               <div className="flex flex-col gap-3">
-                <div className="bg-card border border-border rounded-xl p-3.5">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Layers className="size-3.5 text-muted-foreground/60" />
-                    <span className="text-xs text-muted-foreground/60 uppercase tracking-widest font-medium">
-                      Tasks Today
-                    </span>
-                  </div>
-                  <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
-                    {getTodayTaskCount(tasks)}
-                  </span>
-                </div>
                 <TimeByDay tasks={tasks} />
               </div>
             )}
