@@ -61,7 +61,7 @@ interface TimeByDayProps {
 
 export function TimeByDay({ tasks }: TimeByDayProps) {
   const days = getAllDaysWithTotals(tasks);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   if (days.length === 0) {
     return null;
@@ -86,23 +86,21 @@ export function TimeByDay({ tasks }: TimeByDayProps) {
           ({days.length})
         </span>
       </button>
-      {expanded && (
-        <div className="px-4 pb-4">
-          <div className="flex flex-col gap-1">
-            {days.map((day) => (
-              <div
-                key={day.date}
-                className="flex items-center justify-between py-1.5 text-base"
-              >
-                <span className="text-muted-foreground">{day.label}</span>
-                <span className="font-mono tabular-nums text-foreground/80">
-                  {formatDuration(day.totalMinutes)}
-                </span>
-              </div>
-            ))}
-          </div>
+      <div className="px-4 pb-4">
+        <div className="flex flex-col gap-1">
+          {(expanded ? days : days.slice(0, 1)).map((day) => (
+            <div
+              key={day.date}
+              className="flex items-center justify-between py-1.5 text-base"
+            >
+              <span className="text-muted-foreground">{day.label}</span>
+              <span className="font-mono tabular-nums text-foreground/80">
+                {formatDuration(day.totalMinutes)}
+              </span>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }
