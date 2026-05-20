@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Play, Square, Trash2, Clock, Tag, CalendarClock } from "lucide-react";
+import { Play, Square, Clock, Tag, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -17,6 +17,7 @@ import { type Task, formatDuration } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { ScreenWakeLock } from "@/components/screen-wake-lock";
 import { SessionLogs } from "@/components/session-logs";
+import { TaskNameEdit } from "@/components/task-name-edit";
 import { useTaskContext } from "@/lib/context/task-context";
 
 interface TaskCardProps {
@@ -24,7 +25,7 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task }: TaskCardProps) {
-  const { startTask, stopTask, deleteTask } = useTaskContext();
+  const { startTask, stopTask, deleteTask, renameTask } = useTaskContext();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionDeleteDialogOpen, setSessionDeleteDialogOpen] = useState(false);
@@ -74,11 +75,6 @@ export function TaskCard({ task }: TaskCardProps) {
     if (!isRunning) return;
     await stopTask(task.id);
     setLiveElapsed(0);
-  };
-
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -139,9 +135,12 @@ export function TaskCard({ task }: TaskCardProps) {
                   Live
                 </span>
               )}
-              <h3 className="text-base font-semibold text-foreground truncate">
-                {task.name}
-              </h3>
+              <TaskNameEdit
+                taskName={task.name}
+                onRename={(newName) => renameTask(task.id, newName)}
+                onDeleteRequest={() => setDeleteDialogOpen(true)}
+                onCancel={() => {}}
+              />
             </div>
 
             {task.tags.length > 0 && (
@@ -215,15 +214,6 @@ export function TaskCard({ task }: TaskCardProps) {
                 <Square className="size-5 fill-current" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={handleDeleteClick}
-              title="Delete task"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity"
-            >
-              <Trash2 className="size-4" />
-            </Button>
           </div>
         </div>
       </div>

@@ -27,6 +27,7 @@ interface TaskContextValue {
   runningCount: number;
   createTask: (name: string, tags: string[]) => Promise<void>;
   updateTask: (task: Task) => void;
+  renameTask: (id: string, newName: string) => void;
   deleteTask: (id: string) => Promise<void>;
   startTask: (taskId: string) => Promise<void>;
   stopTask: (taskId: string) => Promise<void>;
@@ -72,6 +73,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
   const updateTask = useCallback((updated: Task) => {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+  }, []);
+
+  const renameTask = useCallback((id: string, newName: string) => {
+    setTasks((prev) => {
+      const task = prev.find((t) => t.id === id);
+      if (!task) return prev;
+      const updated = { ...task, name: newName };
+      saveTask(updated);
+      return prev.map((t) => (t.id === id ? updated : t));
+    });
   }, []);
 
   const deleteTask = useCallback(async (id: string) => {
@@ -184,6 +195,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         runningCount,
         createTask,
         updateTask,
+        renameTask,
         deleteTask,
         startTask,
         stopTask,
