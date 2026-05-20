@@ -57,9 +57,10 @@ function getAllDaysWithTotals(tasks: Task[]): DayTotal[] {
 
 interface TimeByDayProps {
   tasks: Task[];
+  isRunning: boolean;
 }
 
-export function TimeByDay({ tasks }: TimeByDayProps) {
+export function TimeByDay({ tasks, isRunning }: TimeByDayProps) {
   const days = getAllDaysWithTotals(tasks);
   const [expanded, setExpanded] = useState(false);
 
@@ -68,7 +69,15 @@ export function TimeByDay({ tasks }: TimeByDayProps) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl">
+    <div
+      className={cn(
+        "bg-card border rounded-xl relative",
+        isRunning && "border-emerald-500/40 shadow-emerald-500/10 shadow-md",
+      )}
+    >
+      {isRunning && (
+        <div className="absolute inset-0 rounded-xl border border-emerald-500/30 animate-pulse pointer-events-none" />
+      )}
       <button
         onClick={() => setExpanded((e) => !e)}
         className="flex items-center gap-2 w-full px-4 py-3 hover:no-underline"
@@ -85,6 +94,11 @@ export function TimeByDay({ tasks }: TimeByDayProps) {
         <span className="text-xs text-muted-foreground/50">
           ({days.length})
         </span>
+        {isRunning && (
+          <span className="text-xs text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2 py-0.5 font-semibold">
+            Running
+          </span>
+        )}
       </button>
       <div className="px-4 pb-4">
         <div className="flex flex-col gap-1">

@@ -35,12 +35,6 @@ function HomeContent() {
           </div>
 
           <div className="flex items-center gap-3">
-            {runningCount > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-1 font-semibold">
-                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {runningCount} running
-              </div>
-            )}
             <ThemeToggle />
             <div className="flex items-center gap-1 border-l border-border pl-3">
               <button
@@ -65,13 +59,12 @@ function HomeContent() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,340px)_1fr] gap-8 items-start">
           <div className="flex flex-col gap-5 lg:sticky lg:top-20">
-            <NewTaskButton onSubmit={createTask} />
-
             {tasks.length > 0 && (
               <div className="flex flex-col gap-3">
-                <TimeByDay tasks={tasks} />
+                <TimeByDay tasks={tasks} isRunning={runningCount > 0} />
               </div>
             )}
+            <NewTaskButton onSubmit={createTask} />
           </div>
 
           <div className="flex flex-col gap-3">
