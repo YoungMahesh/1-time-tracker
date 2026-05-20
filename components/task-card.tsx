@@ -126,95 +126,71 @@ export function TaskCard({ task }: TaskCardProps) {
           <div className="absolute inset-0 rounded-xl border border-emerald-500/30 animate-pulse pointer-events-none" />
         )}
 
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              {isRunning && (
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Live
-                </span>
-              )}
-              <TaskNameEdit
-                taskName={task.name}
-                onRename={(newName) => renameTask(task.id, newName)}
-                onDeleteRequest={() => setDeleteDialogOpen(true)}
-                onCancel={() => {}}
-              />
-            </div>
-
-            {task.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-3">
-                {task.tags.map((tag, i) => (
-                  <span
-                    key={tag}
-                    className={cn(
-                      "inline-flex items-center gap-0.5 text-sm px-1.5 py-0.5 rounded-md font-medium",
-                      tagColors[i % tagColors.length],
-                    )}
-                  >
-                    <Tag className="size-3" />
-                    {tag}
+        <div className="flex flex-col items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 w-full">
+            <div className=" min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                {isRunning && (
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
+                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Live
                   </span>
-                ))}
+                )}
+                <TaskNameEdit
+                  taskName={task.name}
+                  onRename={(newName) => renameTask(task.id, newName)}
+                  onDeleteRequest={() => setDeleteDialogOpen(true)}
+                  onCancel={() => {}}
+                />
               </div>
-            )}
 
-            <div className="flex items-center gap-1.5">
-              <Clock className="size-4 text-muted-foreground/60 shrink-0" />
-              <span className="text-sm font-mono font-bold tabular-nums text-foreground/80">
-                {formatDuration(todayLiveTotal)}
-              </span>
-              <span className="text-sm text-muted-foreground/40">
-                ·{" "}
-                {
-                  task.logs.filter((l) => {
-                    const logDate = new Date(l.startTimestamp);
-                    logDate.setHours(0, 0, 0, 0);
-                    return (
-                      logDate.getTime() === todayStart.getTime() &&
-                      l.endTimestamp !== null
-                    );
-                  }).length
-                }{" "}
-                session
-                {task.logs.filter((l) => {
-                  const logDate = new Date(l.startTimestamp);
-                  logDate.setHours(0, 0, 0, 0);
-                  return (
-                    logDate.getTime() === todayStart.getTime() &&
-                    l.endTimestamp !== null
-                  );
-                }).length !== 1
-                  ? "s"
-                  : ""}
-              </span>
+              {task.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {task.tags.map((tag, i) => (
+                    <span
+                      key={tag}
+                      className={cn(
+                        "inline-flex items-center gap-0.5 text-sm px-1.5 py-0.5 rounded-md font-medium",
+                        tagColors[i % tagColors.length],
+                      )}
+                    >
+                      <Tag className="size-3" />
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="shrink-0 flex-1">
+              {!isRunning ? (
+                <Button
+                  variant="ghost"
+                  onClick={handleStart}
+                  title="Start timer"
+                  className="text-emerald-500 hover:text-emerald-400 bg-emerald-500/10 gap-2 w-full"
+                >
+                  <Play className="size-4 fill-current" />
+                  Start
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  onClick={handleStop}
+                  title="Stop timer"
+                  className="text-amber-500 hover:text-amber-400 bg-amber-500/10 gap-2 w-full"
+                >
+                  <Square className="size-4 fill-current" />
+                  Stop
+                </Button>
+              )}
             </div>
           </div>
-
-          <div className="flex items-center gap-1 shrink-0">
-            {!isRunning ? (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={handleStart}
-                title="Start timer"
-                className="text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
-              >
-                <Play className="size-5 fill-current" />
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={handleStop}
-                title="Stop timer"
-                className="text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
-              >
-                <Square className="size-5 fill-current" />
-              </Button>
-            )}
-          </div>
+          <TaskDuration
+            todayLiveTotal={todayLiveTotal}
+            task={task}
+            todayStart={todayStart}
+          />
         </div>
       </div>
 
@@ -299,3 +275,46 @@ export function TaskCard({ task }: TaskCardProps) {
     </div>
   );
 }
+
+const TaskDuration = ({
+  todayLiveTotal,
+  todayStart,
+  task,
+}: {
+  todayLiveTotal: number;
+  todayStart: Date;
+  task: Task;
+}) => {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Clock className="size-4 text-muted-foreground/60 shrink-0" />
+      <span className="text-sm font-mono font-bold tabular-nums text-foreground/80">
+        {formatDuration(todayLiveTotal)}
+      </span>
+      <span className="text-sm text-muted-foreground/40">
+        ·{" "}
+        {
+          task.logs.filter((l) => {
+            const logDate = new Date(l.startTimestamp);
+            logDate.setHours(0, 0, 0, 0);
+            return (
+              logDate.getTime() === todayStart.getTime() &&
+              l.endTimestamp !== null
+            );
+          }).length
+        }{" "}
+        session
+        {task.logs.filter((l) => {
+          const logDate = new Date(l.startTimestamp);
+          logDate.setHours(0, 0, 0, 0);
+          return (
+            logDate.getTime() === todayStart.getTime() &&
+            l.endTimestamp !== null
+          );
+        }).length !== 1
+          ? "s"
+          : ""}
+      </span>
+    </div>
+  );
+};

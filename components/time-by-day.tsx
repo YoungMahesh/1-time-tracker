@@ -74,14 +74,12 @@ export function TimeByDay({ tasks, isRunning }: TimeByDayProps) {
         "bg-card border rounded-xl relative",
         isRunning && "border-emerald-500/40 shadow-emerald-500/10 shadow-md",
       )}
+      onClick={() => setExpanded((e) => !e)}
     >
       {isRunning && (
         <div className="absolute inset-0 rounded-xl border border-emerald-500/30 animate-pulse pointer-events-none" />
       )}
-      <button
-        onClick={() => setExpanded((e) => !e)}
-        className="flex items-center gap-2 w-full px-4 py-3 hover:no-underline"
-      >
+      <div className="flex items-center gap-2 w-full px-4 py-3 hover:no-underline">
         <ChevronRight
           className={cn(
             "size-4 text-muted-foreground transition-transform duration-150",
@@ -99,7 +97,7 @@ export function TimeByDay({ tasks, isRunning }: TimeByDayProps) {
             Running
           </span>
         )}
-      </button>
+      </div>
       <div className="px-4 pb-4">
         <div className="flex flex-col gap-1">
           {(expanded ? days : days.slice(0, 1)).map((day) => (
