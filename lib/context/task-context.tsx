@@ -44,7 +44,18 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       const aRunning = a.logs.some((l) => l.endTimestamp === null) ? 1 : 0;
       const bRunning = b.logs.some((l) => l.endTimestamp === null) ? 1 : 0;
       if (bRunning !== aRunning) return bRunning - aRunning;
-      return b.logs.length - a.logs.length;
+
+      const aMaxEnd = a.logs.reduce((max, log) => {
+        return log.endTimestamp !== null ? Math.max(max, log.endTimestamp) : max;
+      }, 0);
+      const bMaxEnd = b.logs.reduce((max, log) => {
+        return log.endTimestamp !== null ? Math.max(max, log.endTimestamp) : max;
+      }, 0);
+
+      if (bMaxEnd !== aMaxEnd) {
+        return bMaxEnd - aMaxEnd;
+      }
+      return b.id.localeCompare(a.id);
     });
   });
 
