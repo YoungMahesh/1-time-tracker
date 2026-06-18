@@ -3,16 +3,13 @@
 import {
   createContext,
   useContext,
-  useState,
-  useEffect,
   useCallback,
+  useMemo,
   type ReactNode,
 } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import {
-  getAllTasks,
-  saveTask,
-  deleteTask as dbDeleteTask,
-  importTasks as dbImportTasks,
+  db,
   type Task,
   type TimeLog,
 } from "@/lib/db";
@@ -26,12 +23,12 @@ interface TaskContextValue {
   loading: boolean;
   runningCount: number;
   createTask: (name: string, tags: string[]) => Promise<void>;
-  updateTask: (task: Task) => void;
-  renameTask: (id: string, newName: string) => void;
+  updateTask: (task: Task) => Promise<void>;
+  renameTask: (id: string, newName: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   startTask: (taskId: string) => Promise<void>;
   stopTask: (taskId: string) => Promise<void>;
-  updateTaskLogs: (taskId: string, logs: TimeLog[]) => void;
+  updateTaskLogs: (taskId: string, logs: TimeLog[]) => Promise<void>;
   exportTasks: () => void;
   importTasks: () => Promise<void>;
 }
@@ -39,62 +36,48 @@ interface TaskContextValue {
 const TaskContext = createContext<TaskContextValue | null>(null);
 
 export function TaskProvider({ children }: { children: ReactNode }) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Read tasks Reactively using useLiveQuery.
+  // It automatically triggers updates when any db.tasks updates occur.
+  const tasks = useLiveQuery(async () => {
+    const list = await db.tasks.toArray();
+    return list.sort((a, b) => {
+      const aRunning = a.logs.some((l) => l.endTimestamp === null) ? 1 : 0;
+      const bRunning = b.logs.some((l) => l.endTimestamp === null) ? 1 : 0;
+      if (bRunning !== aRunning) return bRunning - aRunning;
+      return b.logs.length - a.logs.length;
+    });
+  });
 
-  const runningCount = tasks.filter((t) =>
+  const loading = tasks === undefined;
+  const tasksList = useMemo(() => tasks ?? [], [tasks]);
+
+  const runningCount = tasksList.filter((t) =>
     t.logs.some((l) => l.endTimestamp === null),
   ).length;
 
-  useEffect(() => {
-    getAllTasks()
-      .then((t) =>
-        setTasks(
-          t.sort((a, b) => {
-            const aRunning = a.logs.some((l) => l.endTimestamp === null)
-              ? 1
-              : 0;
-            const bRunning = b.logs.some((l) => l.endTimestamp === null)
-              ? 1
-              : 0;
-            if (bRunning !== aRunning) return bRunning - aRunning;
-            return b.logs.length - a.logs.length;
-          }),
-        ),
-      )
-      .finally(() => setLoading(false));
-  }, []);
-
   const createTask = useCallback(async (name: string, tags: string[]) => {
     const task: Task = { id: generateId(), name, tags, logs: [] };
-    await saveTask(task);
-    setTasks((prev) => [task, ...prev]);
+    await db.tasks.put(task);
   }, []);
 
-  const updateTask = useCallback((updated: Task) => {
-    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+  const updateTask = useCallback(async (updated: Task) => {
+    await db.tasks.put(updated);
   }, []);
 
-  const renameTask = useCallback((id: string, newName: string) => {
-    setTasks((prev) => {
-      const task = prev.find((t) => t.id === id);
-      if (!task) return prev;
-      const updated = { ...task, name: newName };
-      saveTask(updated);
-      return prev.map((t) => (t.id === id ? updated : t));
-    });
+  const renameTask = useCallback(async (id: string, newName: string) => {
+    await db.tasks.update(id, { name: newName });
   }, []);
 
   const deleteTask = useCallback(async (id: string) => {
-    await dbDeleteTask(id);
-    setTasks((prev) => prev.filter((t) => t.id !== id));
+    await db.tasks.delete(id);
   }, []);
 
   const startTask = useCallback(async (taskId: string) => {
     const now = Date.now();
-    let updatedRunning: Task | null = null;
-    setTasks((prev) => {
-      const runningTask = prev.find((t) =>
+    await db.transaction("readwrite", db.tasks, async () => {
+      // 1. Find and stop any currently active task
+      const allTasks = await db.tasks.toArray();
+      const runningTask = allTasks.find((t) =>
         t.logs.some((l) => l.endTimestamp === null),
       );
       if (runningTask) {
@@ -103,61 +86,46 @@ export function TaskProvider({ children }: { children: ReactNode }) {
           const minutes = (now - log.startTimestamp) / 1000 / 60;
           return { ...log, endTimestamp: now, minutesSpent: minutes };
         });
-        updatedRunning = { ...runningTask, logs: updatedLogs };
-        saveTask(updatedRunning);
-        if (runningTask.id === taskId) return prev;
+        await db.tasks.update(runningTask.id, { logs: updatedLogs });
+        if (runningTask.id === taskId) return;
       }
-      const taskToStart = prev.find((t) => t.id === taskId);
-      if (!taskToStart) return prev;
+
+      // 2. Start target task
+      const taskToStart = await db.tasks.get(taskId);
+      if (!taskToStart) return;
       const newLog: TimeLog = {
         startTimestamp: now,
         endTimestamp: null,
         minutesSpent: null,
       };
-      const updated: Task = {
-        ...taskToStart,
+      await db.tasks.update(taskId, {
         logs: [...taskToStart.logs, newLog],
-      };
-      saveTask(updated);
-      return [
-        updated,
-        ...prev
-          .filter((t) => t.id !== taskId)
-          .map((t) => (t.id === runningTask?.id ? updatedRunning! : t)),
-      ];
+      });
     });
   }, []);
 
   const stopTask = useCallback(async (taskId: string) => {
     const now = Date.now();
-    setTasks((prev) => {
-      const task = prev.find((t) => t.id === taskId);
-      if (!task) return prev;
+    await db.transaction("readwrite", db.tasks, async () => {
+      const task = await db.tasks.get(taskId);
+      if (!task) return;
       const activeLog = task.logs.find((l) => l.endTimestamp === null);
-      if (!activeLog) return prev;
+      if (!activeLog) return;
       const updatedLogs: TimeLog[] = task.logs.map((log) => {
         if (log.endTimestamp !== null) return log;
         const minutes = (now - log.startTimestamp) / 1000 / 60;
         return { ...log, endTimestamp: now, minutesSpent: minutes };
       });
-      const updated: Task = { ...task, logs: updatedLogs };
-      saveTask(updated);
-      return prev.map((t) => (t.id === taskId ? updated : t));
+      await db.tasks.update(taskId, { logs: updatedLogs });
     });
   }, []);
 
-  const updateTaskLogs = useCallback((taskId: string, logs: TimeLog[]) => {
-    setTasks((prev) => {
-      const task = prev.find((t) => t.id === taskId);
-      if (!task) return prev;
-      const updated = { ...task, logs };
-      saveTask(updated);
-      return prev.map((t) => (t.id === taskId ? updated : t));
-    });
+  const updateTaskLogs = useCallback(async (taskId: string, logs: TimeLog[]) => {
+    await db.tasks.update(taskId, { logs });
   }, []);
 
   const exportTasks = useCallback(() => {
-    const data = JSON.stringify(tasks, null, 2);
+    const data = JSON.stringify(tasksList, null, 2);
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -165,7 +133,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     a.download = `1timer-export-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [tasks]);
+  }, [tasksList]);
 
   const importTasks = useCallback(async () => {
     const input = document.createElement("input");
@@ -178,8 +146,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         const text = await file.text();
         const imported = JSON.parse(text) as Task[];
         if (!Array.isArray(imported)) throw new Error("Invalid format");
-        await dbImportTasks(imported);
-        setTasks(imported);
+        await db.transaction("readwrite", db.tasks, async () => {
+          await db.tasks.clear();
+          await db.tasks.bulkPut(imported);
+        });
       } catch {
         alert("Failed to import: invalid file format");
       }
@@ -190,7 +160,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   return (
     <TaskContext.Provider
       value={{
-        tasks,
+        tasks: tasksList,
         loading,
         runningCount,
         createTask,

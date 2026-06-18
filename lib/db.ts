@@ -1,3 +1,5 @@
+import Dexie, { type Table } from "dexie";
+
 export interface TimeLog {
   startTimestamp: number;
   endTimestamp: number | null;
@@ -11,79 +13,18 @@ export interface Task {
   logs: TimeLog[];
 }
 
-const DB_NAME = "1timer-db";
-const DB_VERSION = 1;
-const STORE_NAME = "tasks";
+export class OneTimerDatabase extends Dexie {
+  tasks!: Table<Task>;
 
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: "id" });
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
+  constructor() {
+    super("1timer-db");
+    this.version(1).stores({
+      tasks: "id, name",
+    });
+  }
 }
 
-export async function getAllTasks(): Promise<Task[]> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.getAll();
-    request.onsuccess = () => resolve(request.result as Task[]);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-export async function saveTask(task: Task): Promise<void> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.put(task);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
-export async function deleteTask(id: string): Promise<void> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.delete(id);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
-export async function clearAllTasks(): Promise<void> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.clear();
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
-export async function importTasks(tasks: Task[]): Promise<void> {
-  await clearAllTasks();
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    tasks.forEach((task) => store.put(task));
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
+export const db = new OneTimerDatabase();
 
 export function getTotalMinutes(task: Task): number {
   return task.logs.reduce((acc, log) => {
