@@ -35,6 +35,7 @@ function HomeContent() {
           </div>
 
           <div className="flex items-center gap-3">
+            <NewTaskButton onSubmit={createTask} />
             <ThemeToggle />
             <div className="flex items-center gap-1 border-l border-border pl-3">
               <button
@@ -64,7 +65,6 @@ function HomeContent() {
                 <TimeByDay tasks={tasks} isRunning={runningCount > 0} />
               </div>
             )}
-            <NewTaskButton onSubmit={createTask} />
           </div>
 
           <div className="flex flex-col gap-3">

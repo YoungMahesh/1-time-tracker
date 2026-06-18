@@ -22,9 +22,8 @@ export function NewTaskButton({ onSubmit }: NewTaskButtonProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button className="gap-2">
-            <Plus className="size-4" />
-            New Task
+          <Button className="size-7 bg-primary cursor-pointer hover:bg-primary/90 active:scale-95 transition-all">
+            <Plus className="size-4 text-primary-foreground" strokeWidth={3} />
           </Button>
         }
       />
