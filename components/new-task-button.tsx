@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { TaskForm } from "@/components/task-form";
+import { TaskForm } from "@/components/new-task-form";
 
 interface NewTaskButtonProps {
   onSubmit: (name: string, tags: string[]) => void;
