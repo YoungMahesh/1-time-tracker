@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock } from "lucide-react";
+import { Clock, SearchX } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { TaskCard } from "@/components/task-card";
 import { TaskProvider, useTaskContext } from "@/lib/context/task-context";
@@ -11,7 +11,14 @@ import PageHeader from "@/components/page-header";
 
 function HomeContent() {
   const { tasks, loading, runningCount } = useTaskContext();
+  const [searchQuery, setSearchQuery] = useState("");
   const [, setTick] = useState(0);
+
+  const filteredTasks = searchQuery
+    ? tasks.filter((t) =>
+        t.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : tasks;
 
   useEffect(() => {
     if (runningCount === 0) return;
@@ -21,7 +28,7 @@ function HomeContent() {
 
   return (
     <main className="min-h-screen bg-background">
-      <PageHeader />
+      <PageHeader searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,340px)_1fr] gap-8 items-start">
@@ -63,10 +70,25 @@ function HomeContent() {
                   Create your first task using the form to start tracking time.
                 </p>
               </div>
+            ) : filteredTasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="size-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
+                  <SearchX
+                    className="size-8 text-muted-foreground/30"
+                    strokeWidth={1.5}
+                  />
+                </div>
+                <h2 className="text-base font-semibold text-foreground/60 mb-1.5">
+                  No tasks match
+                </h2>
+                <p className="text-sm text-muted-foreground/40 max-w-xs">
+                  Try a different search term.
+                </p>
+              </div>
             ) : (
               <motion.div className="flex flex-col gap-3" layout>
                 <AnimatePresence mode="popLayout">
-                  {tasks.map((task) => (
+                  {filteredTasks.map((task) => (
                     <motion.div
                       key={task.id}
                       layout
