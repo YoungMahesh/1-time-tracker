@@ -1,17 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, TimerReset } from "lucide-react";
-import { SettingsMenu } from "@/components/settings-menu";
+import { Clock } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { NewTaskButton } from "@/components/new-task-button";
 import { TaskCard } from "@/components/task-card";
 import { TaskProvider, useTaskContext } from "@/lib/context/task-context";
 import { TimeByDay } from "@/components/time-by-day";
 import { cn } from "@/lib/utils";
+import PageHeader from "@/components/page-header";
 
 function HomeContent() {
-  const { tasks, loading, runningCount, createTask } = useTaskContext();
+  const { tasks, loading, runningCount } = useTaskContext();
   const [, setTick] = useState(0);
 
   useEffect(() => {
@@ -22,23 +21,7 @@ function HomeContent() {
 
   return (
     <main className="min-h-screen bg-background">
-      <header className="border-b border-border/50 bg-card/60 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <TimerReset className="size-4.5 text-primary" strokeWidth={2} />
-            </div>
-            <span className="text-base font-bold tracking-tight text-foreground">
-              1TimeTracker
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <NewTaskButton onSubmit={createTask} />
-            <SettingsMenu />
-          </div>
-        </div>
-      </header>
+      <PageHeader />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,340px)_1fr] gap-8 items-start">
