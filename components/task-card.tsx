@@ -17,7 +17,7 @@ import { type Task, formatDuration } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { ScreenWakeLock } from "@/components/screen-wake-lock";
 import { SessionLogs } from "@/components/session-logs";
-import { TaskNameEdit } from "@/components/task-name-edit";
+import { TaskEdit } from "@/components/task-edit";
 import { useTaskContext } from "@/lib/context/task-context";
 
 interface TaskCardProps {
@@ -137,7 +137,7 @@ export function TaskCard({ task }: TaskCardProps) {
                     Live
                   </span>
                 )}
-                <TaskNameEdit
+                <TaskEdit
                   taskName={task.name}
                   onRename={(newName) => renameTask(task.id, newName)}
                   onDeleteRequest={() => setDeleteDialogOpen(true)}

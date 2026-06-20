@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface TaskNameEditProps {
+interface TaskEditProps {
   taskName: string;
   onRename: (newName: string) => void;
   onDeleteRequest: () => void;
@@ -22,14 +22,14 @@ interface TaskNameEditProps {
   onEditStateChange?: (editing: boolean) => void;
 }
 
-export function TaskNameEdit({
+export function TaskEdit({
   taskName,
   onRename,
   onDeleteRequest,
   onCancel,
   isEditing: externalIsEditing,
   onEditStateChange,
-}: TaskNameEditProps) {
+}: TaskEditProps) {
   const [internalIsEditing, setInternalIsEditing] = useState(false);
   const [editedName, setEditedName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
