@@ -116,7 +116,7 @@ function EditSessionForm({
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center flex-wrap gap-2">
           <div className="flex flex-col gap-1">
             <label className="text-base text-muted-foreground uppercase tracking-wider">
               Start

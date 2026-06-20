@@ -80,7 +80,7 @@ export function TaskEdit({
   return (
     <>
       {isEditing ? (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center flex-wrap gap-1">
           <input
             ref={inputRef}
             type="text"
