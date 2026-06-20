@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, TimerReset, Download, Upload } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Clock, TimerReset } from "lucide-react";
+import { SettingsMenu } from "@/components/settings-menu";
 import { AnimatePresence, motion } from "framer-motion";
 import { NewTaskButton } from "@/components/new-task-button";
 import { TaskCard } from "@/components/task-card";
@@ -11,8 +11,7 @@ import { TimeByDay } from "@/components/time-by-day";
 import { cn } from "@/lib/utils";
 
 function HomeContent() {
-  const { tasks, loading, runningCount, createTask, exportTasks, importTasks } =
-    useTaskContext();
+  const { tasks, loading, runningCount, createTask } = useTaskContext();
   const [, setTick] = useState(0);
 
   useEffect(() => {
@@ -36,23 +35,7 @@ function HomeContent() {
 
           <div className="flex items-center gap-3">
             <NewTaskButton onSubmit={createTask} />
-            <ThemeToggle />
-            <div className="flex items-center gap-1 border-l border-border pl-3">
-              <button
-                onClick={exportTasks}
-                className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                title="Export data"
-              >
-                <Download className="size-4" />
-              </button>
-              <button
-                onClick={importTasks}
-                className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                title="Import data"
-              >
-                <Upload className="size-4" />
-              </button>
-            </div>
+            <SettingsMenu />
           </div>
         </div>
       </header>
