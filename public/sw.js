@@ -3,11 +3,25 @@
 // The app uses IndexedDB (via Dexie) for all data — no network needed for data.
 // We only need to cache the app shell (HTML + JS + CSS) to load the UI offline.
 
-const CACHE_NAME = 'one-timer-v1';
+const CACHE_NAME = 'one-timer-v2';
 
-// On install: skip waiting so this SW activates immediately
+// On install: precache the app shell so the very first offline launch works,
+// then skip waiting so this SW activates immediately.
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) =>
+      // Fetch the root document fresh and store it under '/'.
+      // { cache: 'reload' } bypasses the HTTP cache so we store the latest shell.
+      fetch('/', { cache: 'reload' })
+        .then((response) => {
+          if (response.ok) return cache.put('/', response.clone());
+        })
+        .catch(() => {
+          // If we're offline at install time there's nothing to precache;
+          // the fetch handler will populate the cache on the next online load.
+        })
+    ).then(() => self.skipWaiting())
+  );
 });
 
 // On activate: clean up old caches and claim all clients immediately

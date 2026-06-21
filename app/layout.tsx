@@ -50,9 +50,11 @@ export default function RootLayout({
     >
       <head>
         <ThemeInitialization />
-        <ServiceWorkerRegistration />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ServiceWorkerRegistration />
+        {children}
+      </body>
     </html>
   );
 }
