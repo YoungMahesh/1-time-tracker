@@ -6,7 +6,6 @@ import {
   ThemeInitialization,
   ServiceWorkerRegistration,
 } from "@/components/client-scripts";
-import { OfflineProvider } from "@/lib/context/offline-context";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -53,9 +52,7 @@ export default function RootLayout({
         <ThemeInitialization />
         <ServiceWorkerRegistration />
       </head>
-      <body className="min-h-full flex flex-col">
-        <OfflineProvider>{children}</OfflineProvider>
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

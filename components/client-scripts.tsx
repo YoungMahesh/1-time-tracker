@@ -31,20 +31,9 @@ export function ServiceWorkerRegistration() {
         __html: `
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js').then(function(registration) {
-              console.log('[v0] Service Worker registered successfully');
-            }).catch(function(error) {
-              console.error('[v0] Service Worker registration failed:', error);
-            });
+            navigator.serviceWorker.register('/sw.js');
           });
         }
-        
-        // Suppress default browser offline UI
-        window.addEventListener('offline', function() {
-          if (document.documentElement) {
-            document.documentElement.style.display = 'auto';
-          }
-        }, true);
       `,
       }}
     />
