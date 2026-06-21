@@ -16,6 +16,34 @@ async function build() {
     clientsClaim: true,
     navigateFallback: '/',
     navigateFallbackDenylist: [/^\/api\//],
+    // Enhanced caching strategies for offline support
+    runtimeCaching: [
+      {
+        // Cache static assets (images, fonts, etc.)
+        urlPattern: /^\/.*\.(png|jpg|jpeg|svg|gif|webp|woff|woff2)$/,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'assets',
+          expiration: {
+            maxEntries: 100,
+            maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+          },
+        },
+      },
+      {
+        // Network-first for any other requests, fallback to cache
+        urlPattern: /^(?!.*\.(?:png|jpg|jpeg|svg|gif|webp|woff|woff2)$).*$/,
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'dynamic',
+          networkTimeoutSeconds: 5,
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 60 * 60 * 24, // 1 day
+          },
+        },
+      },
+    ],
   });
 
   if (warnings.length > 0) {
